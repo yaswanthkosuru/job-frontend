@@ -1,34 +1,21 @@
-/**
- * SignupCandidatePage
- *
- * This is the page that a candidate will see when they are signing up
- */
+"use client"
+import CandidateForm from '@/components/candidates/CandidateForm'
+import { createCandidate } from '@/features/candidate/CandidateSlice'
 import React from 'react' 
+import { useDispatch } from 'react-redux'
+import { AppDispatch } from '../store'
 
 const SignupCandidatePage = () => {
+  const dispatch = useDispatch<AppDispatch>()
+  const handleSubmit = async (data: any) => {
+    try {
+      await dispatch(createCandidate(data))
+    } catch (error) {
+      console.error(error)
+    }
+  }
   return (
-    <div>
-      <h1>Signup Candidate</h1>
-      <form>
-        <label>
-          Email:
-          <input type="email" name="email" />
-        </label>
-        <label>
-          Password:
-          <input type="password" name="password" />
-        </label>
-        <label>
-          First Name:
-          <input type="text" name="firstName" />
-        </label>
-        <label>
-          Last Name:
-          <input type="text" name="lastName" />
-        </label>
-        <button type="submit">Signup</button>
-      </form>
-    </div>
+    <CandidateForm onSubmit={handleSubmit} />
   )
 }
 

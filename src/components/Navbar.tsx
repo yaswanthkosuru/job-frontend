@@ -18,7 +18,7 @@ const Navbar = () => {
             <span className="text-lg font-bold text-primary-foreground">R</span>
           </div>
           <Link href="/" className="text-lg font-semibold tracking-tight hover:text-primary">
-            Recruiter
+            Job Management
           </Link>
         </div>
 
@@ -38,18 +38,6 @@ const Navbar = () => {
             className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
           >
             Browse Jobs
-          </Link>
-          <Link
-            href="/companies"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Companies
-          </Link>
-          <Link
-            href="/resources"
-            className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-          >
-            Resources
           </Link>
         </nav>
 

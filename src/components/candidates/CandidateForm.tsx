@@ -79,10 +79,7 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
   const handleSubmit = async (data: z.infer<typeof candidateProfileSchema>) => {
     try {
       await onSubmit(data)
-      toast.success("Candidate added successfully!")
-    //   form.reset()
     } catch (error) {
-
       toast.error("Failed to add candidate")
     }
   }

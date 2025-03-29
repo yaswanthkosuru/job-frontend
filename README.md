@@ -1,36 +1,99 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Job Frontend
 
-## Getting Started
+A modern web application built with Next.js and TypeScript, featuring a robust frontend architecture with state management, form handling, and accessible UI components.
 
-First, run the development server:
+## 🚀 Features
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- 🎨 Modern UI with Radix UI components
+- 🔄 Real-time state management with Redux Toolkit
+- 📝 Form handling with React Hook Form and Zod validation
+- 🎨 Tailwind CSS for styling
+- 🌓 Dark/Light theme support
+- 📅 Date handling with date-fns
+- 🔄 Animations with motion
+- 📱 Responsive design
+
+## 🛠️ Tech Stack
+
+- **Framework**: Next.js 15.2.2
+- **Language**: TypeScript
+- **State Management**: Redux Toolkit
+- **UI Components**: Radix UI
+- **Styling**: Tailwind CSS
+- **Form Handling**: React Hook Form + Zod
+- **API Client**: Axios
+- **Icons**: Lucide React
+- **Date Handling**: date-fns
+- **Animation**: motion
+- **Theme Management**: next-themes
+
+## 🚀 Getting Started
+
+1. Clone the repository
+2. Install dependencies:
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   ```
+3. Start the development server:
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 📦 Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+src/
+├── app/              # Next.js app directory with routes and pages
+├── components/       # Reusable UI components
+├── features/         # Feature-specific modules
+├── hooks/           # Custom React hooks
+├── lib/             # Utility functions and shared logic
+├── types/           # TypeScript type definitions
+└── constants.ts     # Application-wide constants
+```
 
-## Learn More
+## 🛠️ Development
 
-To learn more about Next.js, take a look at the following resources:
+### Available Scripts
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run dev` - Starts the development server
+- `npm run build` - Builds the application for production
+- `npm run start` - Starts the production server
+- `npm run lint` - Runs ESLint for code linting
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Development Tools
 
-## Deploy on Vercel
+- **Code Linting**: ESLint
+- **Type Checking**: TypeScript
+- **CSS Processing**: PostCSS with Tailwind CSS
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📚 Learning Resources
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [Next.js Documentation](https://nextjs.org/docs)
+- [React Documentation](https://react.dev/)
+- [TypeScript Documentation](https://www.typescriptlang.org/docs/)
+- [Redux Toolkit Documentation](https://redux-toolkit.js.org/)
+- [Radix UI Documentation](https://www.radix-ui.com/)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+
+## 📝 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 👥 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request

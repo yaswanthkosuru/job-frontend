@@ -4,6 +4,7 @@ import axios from 'axios';
 import { API_URL } from '@/constants';
 import { getAuthHeaders } from '@/constants';
 import { useSelector } from 'react-redux';
+import { toast } from 'sonner';
 
 export const fetchCandidates = createAsyncThunk(
   'candidate/fetchCandidates',
@@ -33,7 +34,8 @@ export const createCandidate = createAsyncThunk(
     };
 
     const response = await axios.post<CandidateProfile>(`${API_URL}/api/v1/user/candidate/`, candidateDataToPost, getAuthHeaders());
-    return response.data;
+ 
+      return response.data;
   }
 );
 
@@ -58,20 +60,24 @@ const candidateSlice = createSlice({
       })
       .addCase(fetchCandidates.fulfilled, (state, action) => {
         state.status = 'succeeded';
+        toast.success("Candidates fetched successfully");
         state.candidates = action.payload;
       })
-      .addCase(fetchCandidates.rejected, (state) => {
+      .addCase(fetchCandidates.rejected, (state, action) => {
         state.status = 'failed';
+        toast.error("Failed to fetch candidates");
       })
       .addCase(createCandidate.pending, (state) => {
         state.status = 'loading';
       })
       .addCase(createCandidate.fulfilled, (state, action) => {
         state.status = 'succeeded';
+        toast.success("Candidate added successfully");
         state.candidates.push(action.payload);
       })
-      .addCase(createCandidate.rejected, (state) => {
+      .addCase(createCandidate.rejected, (state, action) => {
         state.status = 'failed';
+        toast.error("Failed to add candidate");
       });
   },
 });
