@@ -42,7 +42,7 @@ export default function CandidatesPage() {
 
   // Fetch candidates on initial load
   useEffect(() => {
-    dispatch(fetchCandidates());
+    dispatch(fetchCandidates({}));
   }, [dispatch]);
 
   if (status === "loading") {
