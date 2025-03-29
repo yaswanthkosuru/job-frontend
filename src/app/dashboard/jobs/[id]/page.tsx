@@ -33,14 +33,6 @@ export default function JobPostingPage() {
   useEffect(() => {
     setIsClient(false)
   }, [])
-
-  const handleSubmit = async (data: CandidateProfile) => {
-    const addappplicantdata = {
-      candidate: data,
-      jobposting: jobPosting?.id as number,
-    }
-    await dispatch(createJobApplication(addappplicantdata))
-  }
   if (isClient) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
