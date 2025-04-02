@@ -25,10 +25,31 @@ export const createJobApplication = createAsyncThunk(
 
 export const UpdateStatusofJobApplication = createAsyncThunk(
   'jobapplicants/UpdateStatusofJobApplication',
-   async ({jobapplicant_id,status,additional_notes}:{jobapplicant_id:number,status:string,additional_notes:string})=>{
-    const response = await axios.put(`${API_URL}/api/v1/recruiter/jobapplication/${jobapplicant_id}/update_status/`, {status,additional_notes}, getAuthHeaders());
-    return response.data;
-   }
+   async ({jobapplicant_id,status,additional_notes}:{jobapplicant_id:number,status:string,additional_notes:string},thunkAPI) => {
+    const originalState = thunkAPI.getState() as RootState;
+    
+    // Optimistically update the state
+    thunkAPI.dispatch({
+      type: 'jobapplicants/optimisticUpdate',
+      payload: {
+        id: jobapplicant_id,
+        status: status as "pending" | "interview" | "rejected" | "accepted",
+        additional_notes
+      }
+    });
+
+    try {
+      const response = await axios.put(`${API_URL}/api/v1/recruiter/jobapplication/${jobapplicant_id}/update_status/`, {status,additional_notes}, getAuthHeaders());
+      return response.data;
+    } catch (error) {
+      // Revert the state if API call fails
+      thunkAPI.dispatch({
+        type: 'jobapplicants/rollback',
+        payload: originalState.jobapplicants.jobapplicants
+      });
+      throw error;
+    }
+  }
 );
 
 export const getJobApplicants = createAsyncThunk(
@@ -53,7 +74,20 @@ const initialState: JobApplicationState = {
 const jobApplicantsSlice = createSlice({
   name: 'jobapplicants',
   initialState,
-  reducers: {},
+  reducers: {
+    optimisticUpdate: (state, action) => {
+      state.jobapplicants = state.jobapplicants.map((app) =>
+        app.id === action.payload.id ? { 
+          ...app, 
+          status: action.payload.status,
+          additional_notes: action.payload.additional_notes
+        } : app
+      );
+    },
+    rollback: (state, action) => {
+      state.jobapplicants = action.payload;
+    }
+  },
   extraReducers: (builder) => {
     // Create Job Application
     builder
@@ -64,7 +98,6 @@ const jobApplicantsSlice = createSlice({
       .addCase(createJobApplication.fulfilled, (state, action) => {
         state.status = 'succeeded';
         toast.success("Candidate added successfully!")
-        // state.jobapplicants.push(action.payload);  
       })
       .addCase(createJobApplication.rejected, (state, action) => {
         state.status = 'failed';
@@ -78,9 +111,6 @@ const jobApplicantsSlice = createSlice({
       })
       .addCase(UpdateStatusofJobApplication.fulfilled, (state, action) => {
         state.status = 'succeeded';
-        state.jobapplicants = state.jobapplicants.map((app) =>
-          app.id === action.payload.id ? { ...app, status: action.payload.status, additional_notes: action.payload.additional_notes  } : app
-        );
         toast.success("Candidate updated successfully!")
       })
       .addCase(UpdateStatusofJobApplication.rejected, (state, action) => {

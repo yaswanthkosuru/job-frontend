@@ -139,7 +139,12 @@ export default function ApplicationBoard() {
                       if (targetColumn >= 0 && targetColumn < statuses.length) {
                         const newStatus = statuses[targetColumn]
                         if (newStatus !== application.status) {
-                          dispatch(UpdateStatusofJobApplication({jobapplicant_id: application.id, status: newStatus}))
+                          
+                          dispatch(UpdateStatusofJobApplication({
+                            jobapplicant_id: application.id, 
+                            status: newStatus,
+                            additional_notes: application.additional_notes || ''
+                          }))
                           
                         }
                       }
