@@ -12,29 +12,7 @@ import { getJobApplicationAnalytics, useJobApplicationAnalytics } from "@/featur
 
 
 
-// Sample data remains the same
-const jobPositions: Interviewjobapplicationanalytics[] = [
-  {
-    id: 181,
-    title: "Surveyor, building control",
-    application_count: 2
-  },
-  {
-    id: 182,
-    title: "Water engineer",
-    application_count: 1
-  },
-  {
-    id: 183, // Added another example for better grid view
-    title: "Software Developer",
-    application_count: 15
-  },
-  {
-    id: 184, // Added another example
-    title: "Project Manager",
-    application_count: 0
-  }
-];
+// Sample data remains the sam
 
 export default function InterviewerPage() {
   const dispatch=useDispatch<AppDispatch>();
@@ -43,6 +21,7 @@ export default function InterviewerPage() {
     dispatch(getJobApplicationAnalytics());
   }, []);
   const jobApplicationAnalytics = useJobApplicationAnalytics();
+  console.log(jobApplicationAnalytics,"jobApplicationAnalytics");
 
   return (
     <div className="container mx-auto py-10 px-4 md:px-6 lg:px-8"> {/* Added more padding */}

@@ -113,7 +113,7 @@ export default function JobListings() {
 
   useEffect(() => {
     dispatch(fetchJobPostings());
-  }, [dispatch]);
+  }, [dispatch, jobs]);
 
   // Get unique departments, skills, and employment types for filters
   const departments = [...new Set(jobs.map((job) => job.department))]

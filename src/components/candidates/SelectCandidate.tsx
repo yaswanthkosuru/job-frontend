@@ -62,7 +62,7 @@ const SelectCandidate = ({ onSelectedCandidates }: SelectCandidateProps) => {
           candidates.map((candidate) => (
             <div
               key={candidate.id}
-              className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+              className={`flex overflow-hidden items-center p-4 border rounded-lg cursor-pointer transition-colors ${
                 selectedIds.has(candidate.id) ? 'bg-primary/10 border-primary' : 'hover:bg-muted/50'
               }`}
               onClick={() => toggleCandidate(candidate.id)}

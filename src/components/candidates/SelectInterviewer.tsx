@@ -13,12 +13,14 @@ interface SelectInterviewerProps {
 const SelectInterviewer = ({ onSelectedInterviewers }: SelectInterviewerProps) => {
   const dispatch = useDispatch<AppDispatch>();
   const [selectedId, setSelectedId] = useState<number | null>(null);
+  const { interviewers } = useInterviewerSelector();
 
   useEffect(() => {
-    dispatch(fetchInterviewers());
-  }, [dispatch]);
+    if (!interviewers || interviewers.length === 0) {
+      dispatch(fetchInterviewers());
+    }
+  }, [dispatch, interviewers]);
 
-  const { interviewers } = useInterviewerSelector();
   console.log(interviewers,"interviewers")
 
   const toggleInterviewer = (interviewerId: number) => {
@@ -49,7 +51,7 @@ const SelectInterviewer = ({ onSelectedInterviewers }: SelectInterviewerProps) =
         {interviewers.map((interviewer) => (
           <div
             key={interviewer.user.id}
-            className={`flex items-center p-4 border rounded-lg cursor-pointer transition-colors ${
+            className={`flex overflow-hidden items-center p-4 border rounded-lg cursor-pointer transition-colors ${
               selectedId === interviewer.user.id ? "bg-primary/10 border-primary" : "bg-white hover:bg-muted/50"
             }`}
             onClick={() => setSelectedId(interviewer.user.id)}
@@ -64,7 +66,7 @@ const SelectInterviewer = ({ onSelectedInterviewers }: SelectInterviewerProps) =
                   <span className="font-medium">{interviewer.user.username || "Unknown User"}</span>
                   <p className="text-sm text-muted-foreground mt-1">{interviewer.user.email || "No Email"}</p>
                 </div>
-                {selectedId === interviewer.id && (
+                {selectedId === interviewer.user.id && (
                   <Button variant="ghost" size="icon">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
