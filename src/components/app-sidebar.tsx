@@ -1,4 +1,4 @@
-import { Briefcase, Calendar, Home, Inbox, Search, Settings } from "lucide-react"
+import { Briefcase, Calendar, Home, Inbox, Search, Settings, PilcrowLeftIcon } from "lucide-react"
 
 import {
   Sidebar,
@@ -14,15 +14,20 @@ import {
 // Menu items.
 const items = [
   {
-    title: "Search Candidates",
+    title: "Manage Candidates",
     url: "/dashboard/candidates",
     icon: Inbox,
   },
   {
-    title: "My Job Postings",
+    title: "Manage Job Postings",
     url: "/dashboard/jobs",
     icon: Briefcase,
   },
+  {
+    title: "Manage Interviewers",
+    url: "/dashboard/interviewers",
+    icon: Settings,
+  }
 ]
 
 export function AppSidebar() {

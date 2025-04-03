@@ -49,14 +49,24 @@ const LoginPage = () => {
   useEffect(() => {
     if (auth.status === "succeeded" && auth.token) {
       toast.success("Login successful!");
-      router.push("/createjobposting"); // Redirect to dashboard after successful login
+      console.log(auth.user)
+      const role=auth.user?.role;
+      if (role ==="candidate"){
+        router.push("/browsejobs");
+      }
+      else if (role ==="interviewer"){
+        router.push("/interviewer");
+      }
+      else{
+        router.push("/dashboard/jobs");
+      }
     }
     
     if (auth.status === "failed" && auth.error) {
       toast.error(auth.error || "Login failed. Please try again.");
     }
   }, [auth.status, auth.token, auth.error, router]);
-
+  
   // Form submission handler
   const onSubmit = (data: LoginFormValues) => {
     dispatch(loginUser({

@@ -11,3 +11,9 @@ export interface Application {
     jobposting: number,
     additional_notes: string | null
   }
+
+  export interface Interviewjobapplicationanalytics {
+    id: number;
+    title: string;
+    application_count: number;
+  }

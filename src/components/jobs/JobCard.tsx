@@ -105,7 +105,7 @@ export function JobCard({ job }: JobCardProps) {
             <Calendar className="w-4 h-4" />
             <span>Posted {formatDate(job.created_at)}</span>
           </div>
-          <Button disabled={job.is_active === false} variant="default" className="px-6 ml-4">
+          <Button disabled={job.is_active === false} variant="default" className="px-6 ml-4 cursor-pointer">
             Apply Now
           </Button>
         </div>

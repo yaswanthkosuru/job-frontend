@@ -47,4 +47,9 @@ export const useJobPostingById = (id: number) => {
   return state.jobPostings.find((jobposting) => jobposting.id === id);
 };
 
+export const useJobPostings = () => {
+  const state = useSelector((state: RootState) => state.jobpostingData);
+  return state.jobPostings;
+};
+
 export default jobPostingSlice.reducer;

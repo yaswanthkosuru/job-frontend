@@ -1,4 +1,5 @@
 export interface User {
+    id: number;
     email: string;
     phone: string;
     username: string;
@@ -25,4 +26,25 @@ export interface CandidateProfile {
     expected_salary: string;
     notice_period: number;
     resume_file_url: string;
+}
+
+export interface Organisation {
+    id: number;
+    name: string;
+    location: string;
+    industry: string;
+}
+
+export interface InterviewerProfile {
+    id: number;
+    user: User;
+    job_title: string;
+    department: string;
+    years_of_experience: number;
+    bio: string;
+    role: 'interviewer';
+    added_by: {
+        user: User;
+        organisation: Organisation;
+    };
 }

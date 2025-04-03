@@ -4,13 +4,27 @@ import axios from 'axios';
 import { API_URL } from '@/constants';
 import { getAuthHeaders } from '@/constants';
 import { renameKeyInNestedObject,setNestedValue } from '@/lib/utils';
-import { Application } from '@/types/jobApplicants';
+import { Application, Interviewjobapplicationanalytics } from '@/types/jobApplicants';
 import { RootState } from '../../app/store';
 import {toast} from "sonner"
 import { useSelector, useDispatch } from 'react-redux';
 import { useCallback } from 'react';
 import type { AppDispatch } from '../../app/store';
 
+
+export interface JobApplicationState {
+  status: 'idle' | 'loading' | 'succeeded' | 'failed';
+  jobapplicants: Application[]|[];
+  jobapplicationanalytics: Interviewjobapplicationanalytics[];
+  error: string | null;
+}
+
+const initialState: JobApplicationState = {
+  status: 'idle',
+  jobapplicants: [],
+  jobapplicationanalytics: [],
+  error: null,
+};
 export const createJobApplication = createAsyncThunk(
   'jobapplicants/createJobApplication',
    async ({jobposting_id,candidate_ids}:{jobposting_id:number,candidate_ids:number[]})=>{
@@ -52,24 +66,39 @@ export const UpdateStatusofJobApplication = createAsyncThunk(
   }
 );
 
-export const getJobApplicants = createAsyncThunk(
-  'recruiter/getjobapplicants',
-  async () => {
-    const response = await axios.get(`${API_URL}/api/v1/recruiter/jobapplication/`, getAuthHeaders());
+export const scheduleInterview = createAsyncThunk(
+  'jobapplicants/scheduleInterview',
+  async ({jobapplicant_id,user_id}:{jobapplicant_id:number,user_id:number}) => {
+    const response = await axios.post(`${API_URL}/api/v1/recruiter/jobapplication/${jobapplicant_id}/schedule_interview/`, {user_id}, getAuthHeaders());
+    console.log(response.data,"schedule interview");
     return response.data;
   }
 );
-export interface JobApplicationState {
-  status: 'idle' | 'loading' | 'succeeded' | 'failed';
-  jobapplicants: Application[]|[];
-  error: string | null;
-}
 
-const initialState: JobApplicationState = {
-  status: 'idle',
-  jobapplicants: [],
-  error: null,
-};
+export const getJobApplicationAnalytics = createAsyncThunk(
+  'jobapplicants/getJobApplicationAnalytics',
+  async (_, { rejectWithValue }) => {
+    const url = `${API_URL}/api/v1/interviewer/jobapplication/job_application_counts/`;
+    try {
+      const response = await axios.get<Interviewjobapplicationanalytics[]>(url, getAuthHeaders());
+      console.log(response.data, "interviewers");
+      console.log("Interviewers fetched successfully", response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching interviewers:", error);
+      throw rejectWithValue(error);
+    }
+  }
+);
+
+export const getJobApplicants = createAsyncThunk(
+  'recruiter/getjobapplicants',
+  async ({job_id}:{job_id?:number}) => {
+    const response = await axios.get(`${API_URL}/api/v1/recruiter/jobapplication/?job_id=${job_id}`, getAuthHeaders());
+    return response.data;
+  }
+);
+
 
 const jobApplicantsSlice = createSlice({
   name: 'jobapplicants',
@@ -133,7 +162,22 @@ const jobApplicantsSlice = createSlice({
         state.status = 'failed';
         state.error = action.error.message || 'Failed to fetch job applicants';
         toast.error("Failed to fetch job applicants!")
-      });
+      })
+      .addCase(getJobApplicationAnalytics.pending, (state) => {
+        state.status = 'loading';
+        state.error = null;
+      })
+      .addCase(getJobApplicationAnalytics.fulfilled, (state, action) => {
+        state.status = 'succeeded';
+        state.jobapplicationanalytics = action.payload;
+        toast.success("Job application analytics fetched successfully!")
+      })
+      .addCase(getJobApplicationAnalytics.rejected, (state, action) => {
+        state.status = 'failed';
+        state.error = action.error.message || 'Failed to fetch job application analytics';
+        toast.error("Failed to fetch job application analytics!")
+      })
+      ;
   },
 });
 
@@ -143,14 +187,14 @@ export const selectJobApplicantsStatus = (state: RootState) => state.jobapplican
 export const selectJobApplicantsError = (state: RootState) => state.jobapplicants.error;
 
 // Custom hook
-export const useJobApplicants = () => {
+export const useJobApplicants = ({job_id}:{job_id:number}) => {
   const jobapplicants = useSelector(selectJobApplicants);
   const status = useSelector(selectJobApplicantsStatus);
   const error = useSelector(selectJobApplicantsError);
   const dispatch = useDispatch<AppDispatch>();
 
   const fetchApplicants = useCallback(() => {
-    dispatch(getJobApplicants());
+    dispatch(getJobApplicants({job_id}));
   }, [dispatch]);
 
   return {
@@ -160,5 +204,9 @@ export const useJobApplicants = () => {
     fetchApplicants,
   };
 };
-
+export const jobApplicationAnalyticsSelector = (state: RootState) => state.jobapplicants.jobapplicationanalytics;
+export const useJobApplicationAnalytics=()=>{
+  const jobapplicants = useSelector(jobApplicationAnalyticsSelector);
+  return jobapplicants;
+}
 export default jobApplicantsSlice.reducer;

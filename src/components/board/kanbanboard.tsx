@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { motion } from "framer-motion"
-import { Calendar, Clock, Github, Linkedin, FileText, Mail, Phone } from "lucide-react"
+import { Calendar, Clock, Github, Linkedin, FileText, Mail, Phone, UserPlus } from "lucide-react"
 
 import { Card } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Application } from "@/types/jobApplicants"
 import { useDispatch } from "react-redux"
 import { AppDispatch } from "@/app/store"
-import { getJobApplicants, UpdateStatusofJobApplication, useJobApplicants } from "@/features/jobapplicants/jobapplicantslice"
+import { getJobApplicants, scheduleInterview, UpdateStatusofJobApplication, useJobApplicants } from "@/features/jobapplicants/jobapplicantslice"
 import {
   Accordion,
   AccordionContent,
@@ -20,15 +20,26 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion"
 import AdditionalNotes from "./Additionalnotes"
+import { Popover, PopoverContent, PopoverTrigger } from "@radix-ui/react-popover"
+import { fetchInterviewers, useInterviewerSelector } from "@/features/interviewer/InterviewerSlice"
+import SelectInterviewer from "../candidates/SelectInterviewer"
+import { useParams } from "next/navigation"
  
 export default function ApplicationBoard() {
   const [selectedCandidate, setSelectedCandidate] = useState<Application | null>(null)
+  const [selectedId,setSelectedId] = useState<number | null>(null)
   const [isDetailsOpen, setIsDetailsOpen] = useState(false)
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const {id}=useParams()
   const dispatch=useDispatch<AppDispatch>()
-  const {jobapplicants:applications,status,error}=useJobApplicants()
+  const {jobapplicants:applications,status,error}=useJobApplicants({job_id:Number(id)})
+  const {interviewers}=useInterviewerSelector()
+
   useEffect(()=>{
-    dispatch(getJobApplicants())
-  },[dispatch])
+    if(id){
+      dispatch(getJobApplicants({job_id:Number(id)}))
+    }
+  },[id])
 
   const statuses = ["pending", "interview", "rejected", "accepted"] as const
 
@@ -38,19 +49,6 @@ export default function ApplicationBoard() {
     rejected: "bg-red-100 text-red-800 border-red-200",
     accepted: "bg-green-100 text-green-800 border-green-200",
   }
-
-  // const handleDragEnd = (result: any, application: Application) => {
-  //   if (!result.destination) return
-
-  //   const newStatus = statuses[result.destination.droppableId]
-
-  //   if (newStatus !== application.status) {
-  //     const updatedApplications = applications.map((app) =>
-  //       app.id === application.id ? { ...app, status: newStatus } : app,
-  //     )
-  //     setApplications(updatedApplications)
-  //   }
-  // }
 
   const getInitials = (name: string) => {
     return name
@@ -91,6 +89,13 @@ export default function ApplicationBoard() {
       </div>
     )
   }
+
+  const handleSelectedInterviewers = (userId: number) => {
+    dispatch(scheduleInterview({ jobapplicant_id: Number(selectedId), user_id: userId }));
+    console.log(userId)
+  }
+
+
 
 
   return (
@@ -158,9 +163,19 @@ export default function ApplicationBoard() {
                     <Card
                       className={`p-4 border-l-4 ${statusColors[application.status]} shadow-sm hover:shadow-md transition-shadow`}
                     >
+                       
                       <div className="flex items-start gap-3">
-                  
+
                         <div className="flex-1 min-w-0">
+                          {
+                            application.status === "pending" && (
+                              <div onClick={() => {
+                                setSelectedId(application.id)
+                                setIsDialogOpen(true)}} className={`h-6 w-6 cursor-pointer bg-gray-100 rounded-md flex justify-center items-center ${statusColors[application.status]}`}>
+                                <UserPlus />
+                              </div>
+                            )
+                          }
                           <h3 className="font-medium text-base truncate">{application.candidate.user.username}</h3>
                           <p className="text-sm text-muted-foreground truncate">{application.candidate.job_title}</p>
 
@@ -334,6 +349,18 @@ export default function ApplicationBoard() {
                 </div>
               </>
             )}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[600px] h-[90vh]">
+          <DialogHeader>
+            <DialogTitle>Schedule Interviewer</DialogTitle>
+          </DialogHeader>
+          <div className="h-[calc(100vh-200px)] overflow-y-auto p-4">
+            <SelectInterviewer onSelectedInterviewers={handleSelectedInterviewers} />
+            {/* <InterviewerForm onSubmit={handleSubmit} defaultValues={{added_by_id: userId as number}}/> */}
           </div>
         </DialogContent>
       </Dialog>

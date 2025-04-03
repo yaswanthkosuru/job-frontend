@@ -11,6 +11,9 @@ export const authSchema = z.object({
   user: z.object({
     email: z.string(),
     username: z.string().nullable(),
+    id:z.number(),
+    phone:z.string(),
+    role:z.string()
   }).nullable(),
   status: z.enum(["idle", "loading", "succeeded", "failed"]),
   error: z.string().nullable(),
@@ -29,6 +32,9 @@ interface LoginResponse {
   user: {
     email: string;
     username: string | null;
+    id:number,
+    phone:string
+    role:string
   } | null;
 }
 
@@ -55,6 +61,7 @@ export const loginUser = createAsyncThunk(
       }
       // Store token in localStorage for persistence
       localStorage.setItem("token", response.data.access);
+      localStorage.setItem("user", JSON.stringify(userdetails.data));
       
       return payload;
     } catch (error: unknown) {
@@ -81,6 +88,7 @@ const authSlice = createSlice({
       state.token = null;
       state.user = null;
       state.status = "idle";
+      state.error = null;
     },
     clearAuthError: (state) => {
       state.error = null;
@@ -96,6 +104,7 @@ const authSlice = createSlice({
         state.status = "succeeded";
         state.token = action.payload.access;
         state.user = action.payload.user;
+        console.log(state.user,"state user after")
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.status = "failed";
@@ -109,3 +118,4 @@ export const { logout, clearAuthError } = authSlice.actions;
 export const useAuth = () => useSelector((state: RootState) => state.auth);
 
 export default authSlice.reducer;
+
