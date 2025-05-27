@@ -8,6 +8,7 @@ import candidateReducer from "@/features/candidate/CandidateSlice";
 import jobApplicantsReducer from "@/features/jobapplicants/jobapplicantslice";
 import llmReducer from "@/features/llm/llmslice";
 import interviewerReducer from "@/features/interviewer/InterviewerSlice";
+import JobPostingFormBuilderReducer from "@/features/Forms/jobpostingformbuilderSlice";
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,7 @@ export const store = configureStore({
     jobapplicants: jobApplicantsReducer,
     llm: llmReducer,
     interviewer: interviewerReducer,
+    jobpostingformbuilder: JobPostingFormBuilderReducer, // Assuming this is the form builder slice
   },
 });
 

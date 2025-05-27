@@ -6,6 +6,7 @@ import { JobPosting, JobPostingFormValues } from "@/types/jobPosting";
 import { RootState } from "@/app/store";
 import { getAuthHeaders } from "@/constants";
 import { fetchJobPostings } from "../jobposting/jobpostingSlice";
+import { stat } from "fs";
 
 export interface JobPostingState extends JobPostingFormValues {
   status: "idle" | "loading" | "succeeded" | "failed";
@@ -23,7 +24,6 @@ export const createJobPosting = createAsyncThunk(
         jobPostingData,
         getAuthHeaders()
       );
-      dispatch(fetchJobPostings());
       return response.data;
     } catch (error: unknown) {
       if (axios.isAxiosError(error)) {
@@ -37,7 +37,10 @@ export const createJobPosting = createAsyncThunk(
 export const updateJobPosting = createAsyncThunk(
   "jobposting/updateJobPosting",
   async (
-    { id, jobPostingData }: { id: string; jobPostingData: JobPostingFormValues },
+    {
+      id,
+      jobPostingData,
+    }: { id: string; jobPostingData: JobPostingFormValues },
     { dispatch, rejectWithValue }
   ) => {
     try {
@@ -76,6 +79,13 @@ const JobPostingFormSlice = createSlice({
       state,
       action: PayloadAction<Partial<JobPostingState>>
     ) => {
+      return { ...state, ...action.payload, status: "idle" };
+    },
+    UpdateEntireJobPostingForm: (
+      state,
+      action: PayloadAction<JobPostingState>
+    ) => {
+      console.log("Updating Job Posting Form with:", action.payload);
       return { ...state, ...action.payload, status: "idle" };
     },
   },
@@ -120,8 +130,16 @@ const JobPostingFormSlice = createSlice({
   },
 });
 
-export const { updateJobPostingForm } = JobPostingFormSlice.actions;
+export const { updateJobPostingForm, UpdateEntireJobPostingForm } =
+  JobPostingFormSlice.actions;
 export const useJobPostingForm = () =>
-  useSelector((state: RootState & { jobPostingForm: JobPostingState }) => state.jobPostingForm);
+  useSelector(
+    (state: RootState) => {
+      const form = state.jobposting;
+      console.log("Job Posting Form State:", form);
+      return form;
+    }
+    // state.jobPostingForm
+  );
 
 export default JobPostingFormSlice.reducer;
