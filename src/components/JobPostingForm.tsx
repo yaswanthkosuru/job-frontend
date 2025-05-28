@@ -41,12 +41,20 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { SKILLS } from "@/constants";
-
+import { useEffect, useState } from "react";
+import { SkillsSelector } from "./SelectSkills";
+import {
+  UpdateEntireJobPostingForm,
+  useJobPostingForm,
+} from "@/features/Forms/jobPostingFormSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "@/app/store";
 const JobPostingForm: React.FC<JobPostingFormProps> = ({
   onSubmit,
   defaultValues,
   isEdit = false,
 }) => {
+  const values = useJobPostingForm();
   const form = useForm<JobPostingFormValues>({
     resolver: zodResolver(jobPostingSchema),
     defaultValues: {
@@ -62,6 +70,13 @@ const JobPostingForm: React.FC<JobPostingFormProps> = ({
     },
   });
 
+  useEffect(() => {
+    if (values) {
+      console.log(values, "inside job posting form react");
+      form.reset(values);
+    }
+  }, []);
+
   const handleSubmit = async (data: JobPostingFormValues) => {
     try {
       await onSubmit(data);
@@ -71,20 +86,20 @@ const JobPostingForm: React.FC<JobPostingFormProps> = ({
       );
     }
   };
+  const dispatch = useDispatch<AppDispatch>();
+  useEffect(() => {
+    return () => {
+      //executes while component unmount to persist data
+      const formdata = form.getValues();
 
-  const handleSkillChange = (skill: string) => {
-    return (checked: boolean) => {
-      const currentValue = form.getValues("required_skills");
-      if (checked) {
-        form.setValue("required_skills", [...currentValue, skill]);
-      } else {
-        form.setValue(
-          "required_skills",
-          currentValue.filter((s) => s !== skill)
-        );
-      }
+      dispatch(
+        UpdateEntireJobPostingForm({
+          ...formdata,
+          status: "idle",
+        })
+      );
     };
-  };
+  }, []);
 
   return (
     <Card className="w-full max-w-4xl mx-auto shadow-md">
@@ -95,6 +110,8 @@ const JobPostingForm: React.FC<JobPostingFormProps> = ({
       </CardHeader>
       <CardContent className="pt-6">
         <Form {...form}>
+          {/* <SkillSelect name="required_skills" control={form.control} /> */}
+
           <form
             onSubmit={form.handleSubmit(handleSubmit)}
             className="space-y-8"
@@ -254,95 +271,11 @@ const JobPostingForm: React.FC<JobPostingFormProps> = ({
                   </FormItem>
                 )}
               />
-
-              <FormField
-                control={form.control}
-                name="required_skills"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="text-sm font-medium">
-                      Required Skills
-                    </FormLabel>
-                    <div className="space-y-2">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button
-                            variant="outline"
-                            className="w-full justify-between h-10"
-                          >
-                            Select Skills
-                            <Badge
-                              variant="secondary"
-                              className="ml-2 font-normal"
-                            >
-                              {field.value.length} selected
-                            </Badge>
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="w-80 max-h-[300px] overflow-y-auto">
-                          {SKILLS.map((skill) => (
-                            <DropdownMenuCheckboxItem
-                              key={skill}
-                              checked={field.value.includes(skill)}
-                              onCheckedChange={handleSkillChange(skill)}
-                            >
-                              {skill}
-                            </DropdownMenuCheckboxItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-
-                      {field.value.length > 0 && (
-                        <div className="flex flex-wrap gap-2 mt-2">
-                          {field.value.map((skill) => (
-                            <Badge
-                              key={skill}
-                              variant="outline"
-                              className="px-2 py-1"
-                            >
-                              {skill}
-                              <button
-                                type="button"
-                                title={`Remove ${skill}`}
-                                onClick={() => handleSkillChange(skill)(false)}
-                                className="ml-1 text-muted-foreground hover:text-foreground"
-                              >
-                                <X className="h-3 w-3" />
-                              </button>
-                            </Badge>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                    <FormMessage className="text-xs" />
-                  </FormItem>
-                )}
-              />
             </div>
 
-            <FormField
-              control={form.control}
-              name="is_active"
-              render={({ field }) => (
-                <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow-sm">
-                  <FormControl>
-                    <Checkbox
-                      checked={field.value}
-                      onCheckedChange={(checked) => field.onChange(checked)}
-                    />
-                  </FormControl>
-                  <div className="space-y-1 leading-none">
-                    <FormLabel className="text-sm font-medium">
-                      Active
-                    </FormLabel>
-                    <FormDescription className="text-xs">
-                      Whether this job posting is currently active and visible
-                      to candidates.
-                    </FormDescription>
-                  </div>
-                </FormItem>
-              )}
-            />
+            <SkillsSelector form={form} />
+
+            {/* <RequiredSkillsField form={form} /> */}
 
             <div className="pt-4">
               <Button
@@ -355,7 +288,7 @@ const JobPostingForm: React.FC<JobPostingFormProps> = ({
                   ? "Submitting..."
                   : isEdit
                   ? "Update Job Posting"
-                  : "Create Job Posting"}
+                  : "Save and Next"}
               </Button>
             </div>
           </form>

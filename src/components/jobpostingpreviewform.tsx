@@ -50,7 +50,7 @@ const FieldSchema = z.object({
     "file",
   ]),
   required: z.boolean(),
-  multiple: z.boolean().optional(),
+  // multiple: z.boolean().optional(),
   options: z.array(z.string()).optional(),
 });
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useDispatch } from "react-redux";
@@ -24,8 +24,8 @@ import JobPostingFormBuilder from "@/components/JobpostingFormBuilder";
 import PreviewForm from "@/components/jobpostingpreviewform";
 
 import {
-  selectFormBuilderDefinition,
-  setDefinition,
+  setformData,
+  useFormBuilderFormdata,
 } from "@/features/Forms/jobpostingformbuilderSlice";
 import {
   createJobPosting,
@@ -35,7 +35,11 @@ import {
 import { JobPostingFormValues } from "@/types";
 import { BuilderData, BuilderSchema } from "@/types/jobpostingformbuilder";
 
-const CreateJobPostingUI = () => {
+const CreateJobPostingUI = ({
+  Setstep,
+}: {
+  Setstep: React.Dispatch<React.SetStateAction<string>>;
+}) => {
   const dispatch = useDispatch<AppDispatch>();
   const handleSubmit = async (data: JobPostingFormValues) => {
     console.log("Submitting Job Posting Data:", data);
@@ -45,6 +49,7 @@ const CreateJobPostingUI = () => {
         status: "idle", // or another valid status if appropriate
       })
     );
+    Setstep("builder");
     // await dispatch(createJobPosting(data));
   };
 
@@ -59,15 +64,12 @@ const CreateJobPostingUI = () => {
       <CardContent>
         <JobPostingForm onSubmit={handleSubmit} />
       </CardContent>
-      <CardFooter className="flex justify-end">
-        <Button type="submit">Save Posting</Button>
-      </CardFooter>
     </Card>
   );
 };
 
 const CreateFormBuilderUI = () => {
-  const definitionfromselector = selectFormBuilderDefinition();
+  const definitionfromselector = useFormBuilderFormdata();
   const [showPreview, setShowPreview] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
 
@@ -78,9 +80,18 @@ const CreateFormBuilderUI = () => {
     },
   });
 
+  const values = useFormBuilderFormdata();
+
+  useEffect(() => {
+    if (values) {
+      console.log(values, "inside job posting form react");
+      form.reset(values);
+    }
+  }, []);
+
   const handleToggle = (checked: boolean) => {
     dispatch(
-      setDefinition({
+      setformData({
         fields: form.getValues("fields"),
       })
     );
@@ -141,7 +152,7 @@ export default function JobPostingStepper() {
           </TabsList>
 
           <TabsContent value="posting">
-            <CreateJobPostingUI />
+            <CreateJobPostingUI Setstep={setStep} />
           </TabsContent>
 
           <TabsContent value="builder">

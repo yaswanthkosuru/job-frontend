@@ -32,7 +32,7 @@ import {
 } from "@/types/jobpostingformbuilder";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/app/store";
-import { setDefinition } from "@/features/Forms/jobpostingformbuilderSlice";
+import { setformData } from "@/features/Forms/jobpostingformbuilderSlice";
 
 // Schema
 
@@ -176,14 +176,17 @@ const typeRegistry: Record<string, { hasOptions: boolean }> = {
   select: { hasOptions: true },
   radio: { hasOptions: true },
   number: { hasOptions: false },
+  file: { hasOptions: false },
   date: { hasOptions: false },
 };
 
-type FormType = {
+type JobPostingFormBuilderProps = {
   form: UseFormReturn<BuilderData>;
 };
 // Main FormBuilder
-export default function JobPostingFormBuilder({ form }: FormType) {
+export default function JobPostingFormBuilder({
+  form,
+}: JobPostingFormBuilderProps) {
   const { control, handleSubmit, watch, setValue, register } = form;
   const { fields, append, remove, move } = useFieldArray({
     control,
@@ -193,6 +196,13 @@ export default function JobPostingFormBuilder({ form }: FormType) {
   const dispatch = useDispatch<AppDispatch>();
 
   const onSubmit = (data: BuilderData) => console.log(data);
+  useEffect(() => {
+    return () => {
+      // Persist form fields on unmount
+      const fields = form.getValues("fields");
+      dispatch(setformData({ fields }));
+    };
+  }, [dispatch, form]);
 
   return (
     <Form {...form}>

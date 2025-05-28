@@ -4,12 +4,12 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 
 interface FormBuilderState {
-  definition: BuilderData;
+  formData: BuilderData;
   isPreviewMode: boolean;
 }
 
 const initialState: FormBuilderState = {
-  definition: {
+  formData: {
     fields: [
       {
         name: "job_title",
@@ -28,30 +28,30 @@ const formBuilderSlice = createSlice({
   name: "formBuilder",
   initialState,
   reducers: {
-    // Replace the entire form definition
-    setDefinition(state, action: PayloadAction<BuilderData>) {
-      state.definition = { ...action.payload };
+    // Replace the entire form formData
+    setformData(state, action: PayloadAction<BuilderData>) {
+      state.formData = { ...action.payload };
     },
 
     // Add a new field
     addField(state, action: PayloadAction<any>) {
-      state.definition.fields.push(action.payload);
+      state.formData.fields.push(action.payload);
     },
 
     // Update a specific field by index
     updateField(state, action: PayloadAction<{ index: number; field: any }>) {
-      state.definition.fields[action.payload.index] = action.payload.field;
+      state.formData.fields[action.payload.index] = action.payload.field;
     },
 
     // Remove a field by index
     removeField(state, action: PayloadAction<number>) {
-      state.definition.fields.splice(action.payload, 1);
+      state.formData.fields.splice(action.payload, 1);
     },
 
     // Move a field from one index to another
     moveField(state, action: PayloadAction<{ from: number; to: number }>) {
-      const [moved] = state.definition.fields.splice(action.payload.from, 1);
-      state.definition.fields.splice(action.payload.to, 0, moved);
+      const [moved] = state.formData.fields.splice(action.payload.from, 1);
+      state.formData.fields.splice(action.payload.to, 0, moved);
     },
 
     // Toggle between edit and preview mode
@@ -62,7 +62,7 @@ const formBuilderSlice = createSlice({
 });
 
 export const {
-  setDefinition,
+  setformData,
   addField,
   updateField,
   removeField,
@@ -70,10 +70,10 @@ export const {
   togglePreviewMode,
 } = formBuilderSlice.actions;
 
-export const selectFormBuilderDefinition = () => {
-  const { definition } = useSelector(
+export const useFormBuilderFormdata = () => {
+  const { formData } = useSelector(
     (state: RootState) => state.jobpostingformbuilder
   );
-  return definition;
+  return formData;
 };
 export default formBuilderSlice.reducer;
