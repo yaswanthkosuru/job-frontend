@@ -1,150 +1,70 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from "react"
-import { JobFilters } from "@/components/jobs/JobFilters"
-import { JobList } from "@/components/jobs/JobList"
-import { fetchJobPostings, useJobPostings } from "@/features/jobposting/jobpostingSlice"
-import { useDispatch } from "react-redux"
-import { AppDispatch } from "../store"
-
-// Sample job data
-const jobsData = [
-  {
-    id: 21,
-    recruiter: {
-      user: {
-        id: 77,
-        email: "stonejennifer@example.net",
-        phone: "+13043968499",
-        role: "recruiter",
-        username: "lorigarcia",
-      },
-      organisation: {
-        id: 11,
-        name: "Malone, Wyatt and Bruce",
-        location: "North Amyside",
-        industry: "Technology",
-      },
-    },
-    skills: [
-      {
-        id: 21,
-        name: "Node.js",
-      },
-      {
-        id: 22,
-        name: "Django",
-      },
-      {
-        id: 29,
-        name: "Machine Learning",
-      },
-    ],
-    title: "Environmental health practitioner",
-    department: "Sales",
-    description:
-      "A must executive. Its major then offer arm energy line. Wall foreign reveal price interview wear thought. Group teach plant whatever dinner too accept. Space some down agree bed indicate unit.",
-    responsibilities: "Per identify less try huge in. Break candidate official build may weight. Mr good admit bar.",
-    employment_type: "part_time",
-    location: "Hoffmanville",
-    salary: "154843.82",
-    created_at: "2025-03-29T10:26:49.509796Z",
-    updated_at: "2025-03-29T10:26:49.509811Z",
-    is_active: false,
-  },
-  {
-    id: 22,
-    recruiter: {
-      user: {
-        id: 77,
-        email: "stonejennifer@example.net",
-        phone: "+13043968499",
-        role: "recruiter",
-        username: "lorigarcia",
-      },
-      organisation: {
-        id: 11,
-        name: "Malone, Wyatt and Bruce",
-        location: "North Amyside",
-        industry: "Technology",
-      },
-    },
-    skills: [
-      {
-        id: 20,
-        name: "React",
-      },
-      {
-        id: 23,
-        name: "Flask",
-      },
-      {
-        id: 26,
-        name: "AWS",
-      },
-      {
-        id: 29,
-        name: "Machine Learning",
-      },
-    ],
-    title: "Advertising account executive",
-    department: "Marketing",
-    description:
-      "Me speak plan staff west power gas. Debate whether growth budget. Though bill course always responsibility suddenly commercial. It four cause exist.",
-    responsibilities: "Rate spend continue indeed. Beautiful write history gun next of consumer.",
-    employment_type: "full_time",
-    location: "Lake Leah",
-    salary: "80113.12",
-    created_at: "2025-03-29T10:26:50.943153Z",
-    updated_at: "2025-03-29T10:26:50.943165Z",
-    is_active: true,
-  },
-]
-
+import { useEffect, useState } from "react";
+import { JobFilters } from "@/components/jobs/JobFilters";
+import { JobList } from "@/components/jobs/JobList";
+import {
+  fetchJobPostings,
+  useJobPostings,
+} from "@/features/jobposting/jobpostingSlice";
+import { useDispatch } from "react-redux";
+import { AppDispatch } from "../store";
 
 export default function JobListings() {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedDepartment, setSelectedDepartment] = useState("")
-  const [selectedEmploymentType, setSelectedEmploymentType] = useState("")
-  const [selectedSkills, setSelectedSkills] = useState<string[]>([])
-  const [showActiveOnly, setShowActiveOnly] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [selectedEmploymentType, setSelectedEmploymentType] = useState("");
+  const [selectedSkills, setSelectedSkills] = useState<string[]>([]);
+  const [showActiveOnly, setShowActiveOnly] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
   const jobs = useJobPostings();
 
   useEffect(() => {
     dispatch(fetchJobPostings());
-  }, [dispatch, jobs]);
+  }, [dispatch]);
 
   // Get unique departments, skills, and employment types for filters
-  const departments = [...new Set(jobs.map((job) => job.department))]
-  const employmentTypes = [...new Set(jobs.map((job) => job.employment_type))]
-  const allSkills = jobs.flatMap((job) => job.skills.map((skill) => skill.name))
-  const uniqueSkills = [...new Set(allSkills)]
+  const departments = [...new Set(jobs.map((job) => job.department))];
+  const employmentTypes = [...new Set(jobs.map((job) => job.employment_type))];
+  const allSkills = jobs.flatMap((job) =>
+    job.skills.map((skill) => skill.name)
+  );
+  const uniqueSkills = [...new Set(allSkills)];
 
   // Filter jobs based on selected filters
   const filteredJobs = jobs.filter((job) => {
     // Filter by search term
     const matchesSearch =
       job.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      job.description.toLowerCase().includes(searchTerm.toLowerCase())
+      job.description.toLowerCase().includes(searchTerm.toLowerCase());
 
     // Filter by department
-    const matchesDepartment = selectedDepartment === "" || job.department === selectedDepartment
+    const matchesDepartment =
+      selectedDepartment === "" || job.department === selectedDepartment;
 
     // Filter by employment type
-    const matchesEmploymentType = selectedEmploymentType === "" || job.employment_type === selectedEmploymentType
+    const matchesEmploymentType =
+      selectedEmploymentType === "" ||
+      job.employment_type === selectedEmploymentType;
 
     // Filter by skills
     const matchesSkills =
       selectedSkills.length === 0 ||
-      selectedSkills.every((skill) => job.skills.some((jobSkill) => jobSkill.name === skill))
+      selectedSkills.every((skill) =>
+        job.skills.some((jobSkill) => jobSkill.name === skill)
+      );
 
     // Filter by active status
-    const matchesActiveStatus = !showActiveOnly || job.is_active
+    const matchesActiveStatus = !showActiveOnly || job.is_active;
 
-    return matchesSearch && matchesDepartment && matchesEmploymentType && matchesSkills && matchesActiveStatus
-  })
-
+    return (
+      matchesSearch &&
+      matchesDepartment &&
+      matchesEmploymentType &&
+      matchesSkills &&
+      matchesActiveStatus
+    );
+  });
 
   return (
     <div className="container mx-auto py-8 px-4">
@@ -163,9 +83,9 @@ export default function JobListings() {
               onEmploymentTypeChange={setSelectedEmploymentType}
               onSkillToggle={(skill) => {
                 if (selectedSkills.includes(skill)) {
-                  setSelectedSkills(selectedSkills.filter((s) => s !== skill))
+                  setSelectedSkills(selectedSkills.filter((s) => s !== skill));
                 } else {
-                  setSelectedSkills([...selectedSkills, skill])
+                  setSelectedSkills([...selectedSkills, skill]);
                 }
               }}
               onActiveToggle={setShowActiveOnly}
@@ -183,5 +103,5 @@ export default function JobListings() {
         </div>
       </div>
     </div>
-  )
+  );
 }

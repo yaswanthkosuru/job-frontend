@@ -1,17 +1,22 @@
-
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+} from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Briefcase, Building, MapPin } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { InterviewerProfile } from "@/types/users";
+import { InterviewerProfile } from "@/types/userstype";
 
 interface InterviewerCardProps {
   interviewer: InterviewerProfile;
 }
 
 const InterviewerCard = ({ interviewer }: InterviewerCardProps) => {
-  const { user, job_title, department, years_of_experience, bio, added_by } = interviewer;
-  
+  const { user, job_title, department, years_of_experience, bio, added_by } =
+    interviewer;
+
   // Get initials for avatar
   const getInitials = (username: string) => {
     return username.substring(0, 2).toUpperCase();
@@ -26,7 +31,9 @@ const InterviewerCard = ({ interviewer }: InterviewerCardProps) => {
               <AvatarFallback>{getInitials(user.username)}</AvatarFallback>
             </Avatar>
             <div>
-              <h3 className="font-semibold text-lg text-gray-800">{user.username}</h3>
+              <h3 className="font-semibold text-lg text-gray-800">
+                {user.username}
+              </h3>
               <p className="text-sm text-gray-500">{user.email}</p>
             </div>
           </div>
@@ -40,11 +47,13 @@ const InterviewerCard = ({ interviewer }: InterviewerCardProps) => {
             <span className="text-gray-400">•</span>
             <span className="text-gray-600">{department}</span>
           </div>
-          
+
           <div className="flex items-center space-x-2 text-sm">
-            <span className="text-gray-700">{years_of_experience} years experience</span>
+            <span className="text-gray-700">
+              {years_of_experience} years experience
+            </span>
           </div>
-          
+
           <p className="text-sm text-gray-600 line-clamp-2">{bio}</p>
         </div>
       </CardContent>

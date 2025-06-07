@@ -1,31 +1,44 @@
-'use client'
+"use client";
 
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { Button } from "@/components/ui/button"
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
-import { toast } from "sonner"
-import { CandidateProfile } from "@/types/users"
-import { z } from "zod"
-import { SKILLS } from "@/constants"
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import { CandidateProfile } from "@/types/userstype";
+import { z } from "zod";
+import { SKILLS } from "@/constants";
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import { Badge } from "@/components/ui/badge"
+} from "@/components/ui/dropdown-menu";
+import { Badge } from "@/components/ui/badge";
 
 // Create a Zod schema for CandidateProfile
 const candidateProfileSchema = z.object({
   user: z.object({
     email: z.string().email(),
     phone: z.string(),
-    username: z.string()
+    username: z.string(),
   }),
   linkedin_profile: z.string().url(),
   github_profile: z.string().url(),
@@ -41,22 +54,25 @@ const candidateProfileSchema = z.object({
   job_type: z.string(),
   expected_salary: z.string(),
   notice_period: z.number(),
-  resume_file_url: z.string().url()
-})
+  resume_file_url: z.string().url(),
+});
 
 interface AddCandidateFormProps {
-  onSubmit: (data: z.infer<typeof candidateProfileSchema>) => Promise<void>
-  defaultValues?: Partial<z.infer<typeof candidateProfileSchema>>
+  onSubmit: (data: z.infer<typeof candidateProfileSchema>) => Promise<void>;
+  defaultValues?: Partial<z.infer<typeof candidateProfileSchema>>;
 }
 
-const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValues }) => {
+const CandidateForm: React.FC<AddCandidateFormProps> = ({
+  onSubmit,
+  defaultValues,
+}) => {
   const form = useForm<z.infer<typeof candidateProfileSchema>>({
     resolver: zodResolver(candidateProfileSchema),
     defaultValues: {
       user: {
         email: defaultValues?.user?.email || "",
         phone: defaultValues?.user?.phone || "",
-        username: defaultValues?.user?.username || ""
+        username: defaultValues?.user?.username || "",
       },
       linkedin_profile: defaultValues?.linkedin_profile || "",
       github_profile: defaultValues?.github_profile || "",
@@ -72,52 +88,63 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
       job_type: defaultValues?.job_type || "",
       expected_salary: defaultValues?.expected_salary || "",
       notice_period: defaultValues?.notice_period || 0,
-      resume_file_url: defaultValues?.resume_file_url || ""
+      resume_file_url: defaultValues?.resume_file_url || "",
     },
-  })
+  });
 
   const handleSubmit = async (data: z.infer<typeof candidateProfileSchema>) => {
     try {
-      await onSubmit(data)
+      await onSubmit(data);
     } catch (error) {
-      toast.error("Failed to add candidate")
+      toast.error("Failed to add candidate");
     }
-  }
+  };
 
   const handleSkillChange = (skill: string) => {
     return (checked: boolean) => {
-      const currentValue = form.getValues("skills")
+      const currentValue = form.getValues("skills");
       if (checked) {
-        form.setValue("skills", [...currentValue, skill])
+        form.setValue("skills", [...currentValue, skill]);
       } else {
         form.setValue(
           "skills",
-          currentValue.filter((s) => s !== skill),
-        )
+          currentValue.filter((s) => s !== skill)
+        );
       }
-    }
-  }
+    };
+  };
 
   return (
     <div className="container mx-auto py-12">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-xl p-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Add Candidate</h1>
-          <p className="text-gray-600">Fill in the details to add a new candidate</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Add Candidate
+          </h1>
+          <p className="text-gray-600">
+            Fill in the details to add a new candidate
+          </p>
         </div>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          <form
+            onSubmit={form.handleSubmit(handleSubmit)}
+            className="space-y-8"
+          >
             {/* Personal Information */}
             <div className="bg-gray-50 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Personal Information</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Personal Information
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="user.username"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Username</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Username
+                      </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -134,7 +161,9 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
                   name="user.email"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Email</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Email
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="email"
@@ -152,7 +181,9 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
                   name="user.phone"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Phone</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Phone
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="tel"
@@ -170,14 +201,18 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
 
             {/* Professional Profiles */}
             <div className="bg-gray-50 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Professional Profiles</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Professional Profiles
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="linkedin_profile"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">LinkedIn Profile</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        LinkedIn Profile
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="url"
@@ -195,7 +230,9 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
                   name="github_profile"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Github Profile</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Github Profile
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="url"
@@ -213,14 +250,18 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
 
             {/* Education */}
             <div className="bg-gray-50 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Education</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Education
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="degree"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Degree</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Degree
+                      </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -237,7 +278,9 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
                   name="institution"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Institution</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Institution
+                      </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -254,12 +297,16 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
                   name="year_of_completion"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Year of Completion</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Year of Completion
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="number"
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                           className="w-full border-gray-300 focus:border-primary focus:ring-primary"
                           placeholder="Enter year"
                         />
@@ -273,14 +320,18 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
 
             {/* Work Experience */}
             <div className="bg-gray-50 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Work Experience</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Work Experience
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   control={form.control}
                   name="job_title"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Job Title</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Job Title
+                      </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -297,7 +348,9 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
                   name="company"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Company</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Company
+                      </FormLabel>
                       <FormControl>
                         <Input
                           {...field}
@@ -314,7 +367,9 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
                   name="start_date"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Start Date</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Start Date
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="date"
@@ -331,7 +386,9 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
                   name="end_date"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">End Date</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        End Date
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="date"
@@ -356,7 +413,9 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
                             className="rounded border-gray-300 text-primary"
                           />
                         </FormControl>
-                        <FormLabel className="text-sm font-medium text-gray-700">Currently Working</FormLabel>
+                        <FormLabel className="text-sm font-medium text-gray-700">
+                          Currently Working
+                        </FormLabel>
                       </div>
                       <FormMessage className="text-sm text-red-500" />
                     </FormItem>
@@ -367,20 +426,30 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
 
             {/* Skills and Preferences */}
             <div className="bg-gray-50 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Skills and Preferences</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Skills and Preferences
+              </h2>
               <div className="grid gap-6">
                 <FormField
                   control={form.control}
                   name="skills"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Skills</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Skills
+                      </FormLabel>
                       <div className="space-y-2">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="outline" className="w-full justify-between h-10">
+                            <Button
+                              variant="outline"
+                              className="w-full justify-between h-10"
+                            >
                               Select Skills
-                              <Badge variant="secondary" className="ml-2 font-normal">
+                              <Badge
+                                variant="secondary"
+                                className="ml-2 font-normal"
+                              >
                                 {field.value.length} selected
                               </Badge>
                             </Button>
@@ -407,7 +476,9 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
                   name="job_type"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Job Type</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Job Type
+                      </FormLabel>
                       <FormControl>
                         <Select
                           onValueChange={(value) => field.onChange(value)}
@@ -432,7 +503,9 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
                   name="expected_salary"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Expected Salary</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Expected Salary
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -450,12 +523,16 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
                   name="notice_period"
                   render={({ field }) => (
                     <FormItem className="space-y-1">
-                      <FormLabel className="text-sm font-medium text-gray-700">Notice Period (days)</FormLabel>
+                      <FormLabel className="text-sm font-medium text-gray-700">
+                        Notice Period (days)
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="number"
                           {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
+                          onChange={(e) =>
+                            field.onChange(Number(e.target.value))
+                          }
                           className="w-full border-gray-300 focus:border-primary focus:ring-primary"
                           placeholder="Enter notice period"
                         />
@@ -469,13 +546,17 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
 
             {/* Resume */}
             <div className="bg-gray-50 rounded-lg p-6">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4">Resume</h2>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Resume
+              </h2>
               <FormField
                 control={form.control}
                 name="resume_file_url"
                 render={({ field }) => (
                   <FormItem className="space-y-1">
-                    <FormLabel className="text-sm font-medium text-gray-700">Resume URL</FormLabel>
+                    <FormLabel className="text-sm font-medium text-gray-700">
+                      Resume URL
+                    </FormLabel>
                     <FormControl>
                       <Input
                         type="url"
@@ -502,7 +583,7 @@ const CandidateForm: React.FC<AddCandidateFormProps> = ({ onSubmit, defaultValue
         </Form>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default CandidateForm
+export default CandidateForm;

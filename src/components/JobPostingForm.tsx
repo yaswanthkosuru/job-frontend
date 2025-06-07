@@ -12,7 +12,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,18 +25,7 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import { X } from "lucide-react";
 import { toast } from "sonner";
-import {
-  type JobPostingFormProps,
-  type JobPostingFormValues,
-  jobPostingSchema,
-} from "@/types";
-import {
-  DropdownMenu,
-  DropdownMenuCheckboxItem,
-  DropdownMenuContent,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 import { SKILLS } from "@/constants";
@@ -49,19 +37,24 @@ import {
 } from "@/features/Forms/jobPostingFormSlice";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/app/store";
+import TagInput from "./Tagoptionsinput";
+import {
+  JobPostingFormProps,
+  JobPostingFormValues,
+  jobPostingSchema,
+} from "@/types/jobpostingtype";
 const JobPostingForm: React.FC<JobPostingFormProps> = ({
   onSubmit,
   defaultValues,
   isEdit = false,
 }) => {
-  const values = useJobPostingForm();
   const form = useForm<JobPostingFormValues>({
     resolver: zodResolver(jobPostingSchema),
     defaultValues: {
       title: defaultValues?.title || "",
       department: defaultValues?.department || "",
       description: defaultValues?.description || "",
-      responsibilities: defaultValues?.responsibilities || "",
+      responsibilities: defaultValues?.responsibilities || [],
       employment_type: defaultValues?.employment_type || "full_time",
       required_skills: defaultValues?.required_skills || [],
       location: defaultValues?.location || "",
@@ -69,13 +62,6 @@ const JobPostingForm: React.FC<JobPostingFormProps> = ({
       is_active: defaultValues?.is_active || true,
     },
   });
-
-  useEffect(() => {
-    if (values) {
-      console.log(values, "inside job posting form react");
-      form.reset(values);
-    }
-  }, []);
 
   const handleSubmit = async (data: JobPostingFormValues) => {
     try {
@@ -188,10 +174,9 @@ const JobPostingForm: React.FC<JobPostingFormProps> = ({
                       Responsibilities
                     </FormLabel>
                     <FormControl>
-                      <Textarea
-                        placeholder="Enter job responsibilities..."
-                        className="min-h-[150px] resize-y"
-                        {...field}
+                      <TagInput
+                        value={field.value || []}
+                        onChange={field.onChange}
                       />
                     </FormControl>
                     <FormMessage className="text-xs" />

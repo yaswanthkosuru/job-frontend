@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { useForm, useFieldArray, useWatch } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { Trash2 } from "lucide-react";
 
 import {
   Form,
@@ -27,9 +28,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { UseFormReturn } from "react-hook-form";
 import {
   FieldTypeProps,
-  BuilderData,
-  BuilderSchema,
-} from "@/types/jobpostingformbuilder";
+  FieldType,
+  typeRegistry,
+  FieldTemplateSchema,
+} from "@/types/jobpostingformbuildertype";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/app/store";
 import { setformData } from "@/features/Forms/jobpostingformbuilderSlice";
@@ -49,9 +51,6 @@ function FieldEditor({
 
   return (
     <Card className="space-y-4 border border-gray-200 shadow-sm bg-white">
-      <div className="px-4 pt-4 font-semibold text-gray-700">
-        Field #{index + 1}
-      </div>
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <FormField
           control={control}
@@ -168,20 +167,8 @@ function FieldEditor({
   );
 }
 
-// Type Registry
-const typeRegistry: Record<string, { hasOptions: boolean }> = {
-  text: { hasOptions: false },
-  textarea: { hasOptions: false },
-  checkbox: { hasOptions: true },
-  select: { hasOptions: true },
-  radio: { hasOptions: true },
-  number: { hasOptions: false },
-  file: { hasOptions: false },
-  date: { hasOptions: false },
-};
-
 type JobPostingFormBuilderProps = {
-  form: UseFormReturn<BuilderData>;
+  form: UseFormReturn<FieldType>;
 };
 // Main FormBuilder
 export default function JobPostingFormBuilder({
@@ -195,12 +182,14 @@ export default function JobPostingFormBuilder({
 
   const dispatch = useDispatch<AppDispatch>();
 
-  const onSubmit = (data: BuilderData) => console.log(data);
+  const onSubmit = (data: FieldType) => console.log(data);
   useEffect(() => {
     return () => {
-      // Persist form fields on unmount
       const fields = form.getValues("fields");
-      dispatch(setformData({ fields }));
+      // Deep clone to avoid mutation errors
+      const cleaned_fields = FieldTemplateSchema.parse({ fields: fields });
+      const clonedFields = JSON.parse(JSON.stringify(cleaned_fields.fields));
+      dispatch(setformData({ fields: clonedFields }));
     };
   }, [dispatch, form]);
 
@@ -210,24 +199,6 @@ export default function JobPostingFormBuilder({
         onSubmit={handleSubmit(onSubmit)}
         className="max-w-4xl mx-auto flex flex-col gap-6 p-4"
       >
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Admin Form Builder</h1>
-          <Button
-            type="button"
-            onClick={() =>
-              append({
-                name: "",
-                label: "",
-                type: "text",
-                required: false,
-                multiple: false,
-              })
-            }
-          >
-            + Add Field
-          </Button>
-        </div>
-
         {fields.map((fld, idx) => (
           <div key={fld.id} className="relative">
             <FieldEditor
@@ -254,16 +225,33 @@ export default function JobPostingFormBuilder({
               >
                 ↓
               </Button>
-              <Button variant="ghost" size="icon" onClick={() => remove(idx)}>
-                🗑
+              <Button
+                disabled={fld.name === "Email" || fld.name == "FullName"}
+                variant="ghost"
+                size="icon"
+                onClick={() => remove(idx)}
+              >
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </div>
         ))}
 
-        <Button type="submit" className="w-full mt-4">
-          Save Definition
-        </Button>
+        <div className="">
+          <Button
+            type="button"
+            onClick={() =>
+              append({
+                name: "",
+                label: "",
+                type: "text",
+                required: false,
+              })
+            }
+          >
+            + Add Field
+          </Button>
+        </div>
       </form>
     </Form>
   );

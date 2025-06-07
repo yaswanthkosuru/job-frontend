@@ -1,5 +1,9 @@
 import { RootState } from "@/app/store";
-import { useJobPostingForm } from "@/features/Forms/jobPostingFormSlice";
+
+import {
+  JobPostingFormSliceState,
+  JobPostingFormValues,
+} from "@/types/jobpostingtype";
 import {
   MapPin,
   Users,
@@ -9,10 +13,13 @@ import {
   Star,
 } from "lucide-react";
 
-export default function JobPostingTitleSection() {
-  const jobDetails = useJobPostingForm();
-
-  if (!jobDetails) {
+interface JobPostingTitleSectionProps {
+  jobpostingHeaderFields: JobPostingFormValues;
+}
+export default function JobPostingTitleSection({
+  jobpostingHeaderFields,
+}: JobPostingTitleSectionProps) {
+  if (!jobpostingHeaderFields) {
     return <div>Please save jobposting to view preview...</div>;
   }
   const {
@@ -25,7 +32,8 @@ export default function JobPostingTitleSection() {
     location,
     salary,
     is_active,
-  } = jobDetails;
+  } = jobpostingHeaderFields;
+
   return (
     <div className="flex flex-col gap-4">
       <div>
@@ -64,7 +72,13 @@ export default function JobPostingTitleSection() {
               <span>{item}</span>
             </li>
           ))} */}
-          {responsibilities}
+
+          {responsibilities?.map((responsibility, index) => (
+            <li key={index} className="flex items-start gap-2">
+              <CheckCircle size={16} className="text-green-600 mt-0.5" />
+              <span>{responsibility}</span>
+            </li>
+          ))}
         </ul>
       </div>
 
@@ -73,19 +87,7 @@ export default function JobPostingTitleSection() {
           <BookOpen size={18} /> Requirements
         </h2>
         <ul className="space-y-2 text-sm text-gray-700">
-          {/* {[
-            "Strong proficiency in mathematics at the required tutoring level.",
-            "Previous tutoring or teaching experience preferred.",
-            "Excellent communication and interpersonal skills.",
-            "Reliable internet connection and a suitable remote work environment.",
-            "Passion for education and helping students succeed.",
-          ].map((item, index) => (
-            <li key={index} className="flex items-start gap-2">
-              <CheckCircle size={16} className="text-blue-600 mt-0.5" />
-              <span>{item}</span>
-            </li>
-          ))} */}
-          {required_skills.map((item, index) => (
+          {required_skills?.map((item, index) => (
             <li key={index} className="flex items-start gap-2">
               <CheckCircle size={16} className="text-blue-600 mt-0.5" />
               <span>{item}</span>

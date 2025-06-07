@@ -1,20 +1,20 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { CandidateProfile } from '../../types/users';
-import axios from 'axios';
-import { API_URL } from '@/constants';
-import { getAuthHeaders } from '@/constants';
-import { useSelector } from 'react-redux';
-import { toast } from 'sonner';
+import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
+import { CandidateProfile } from "../../types/userstype";
+import axios from "axios";
+import { API_URL } from "@/constants";
+import { getAuthHeaders } from "@/constants";
+import { useSelector } from "react-redux";
+import { toast } from "sonner";
 
 export const fetchCandidates = createAsyncThunk(
-  'candidate/fetchCandidates',
+  "candidate/fetchCandidates",
   async (params: { jobposting_id?: number; show_applied?: boolean } = {}) => {
     const queryParams = new URLSearchParams();
     if (params.jobposting_id) {
-      queryParams.append('jobposting_id', params.jobposting_id.toString());
+      queryParams.append("jobposting_id", params.jobposting_id.toString());
     }
     if (params.show_applied !== undefined) {
-      queryParams.append('show_applied', params.show_applied.toString());
+      queryParams.append("show_applied", params.show_applied.toString());
     }
 
     const url = `${API_URL}/api/v1/user/candidate/?${queryParams.toString()}`;
@@ -22,9 +22,9 @@ export const fetchCandidates = createAsyncThunk(
     return response.data;
   }
 );
-    
+
 export const createCandidate = createAsyncThunk(
-  'candidate/createCandidate',
+  "candidate/createCandidate",
   async (candidateData: CandidateProfile) => {
     const { skills, user, ...rest } = candidateData;
     const candidateDataToPost = {
@@ -33,57 +33,63 @@ export const createCandidate = createAsyncThunk(
       ...rest,
     };
 
-    const response = await axios.post<CandidateProfile>(`${API_URL}/api/v1/user/candidate/`, candidateDataToPost, getAuthHeaders());
- 
-      return response.data;
+    const response = await axios.post<CandidateProfile>(
+      `${API_URL}/api/v1/user/candidate/`,
+      candidateDataToPost,
+      getAuthHeaders()
+    );
+
+    return response.data;
   }
 );
 
 export interface CandidateState {
   candidates: CandidateProfile[];
-  status: 'idle' | 'loading' | 'succeeded' | 'failed';
+  status: "idle" | "loading" | "succeeded" | "failed";
 }
 
 const initialState: CandidateState = {
   candidates: [],
-  status: 'idle',
+  status: "idle",
 };
 
 const candidateSlice = createSlice({
-  name: 'candidate',
+  name: "candidate",
   initialState,
   reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchCandidates.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
       })
       .addCase(fetchCandidates.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.status = "succeeded";
         toast.success("Candidates fetched successfully");
         state.candidates = action.payload;
       })
       .addCase(fetchCandidates.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = "failed";
         toast.error("Failed to fetch candidates");
       })
       .addCase(createCandidate.pending, (state) => {
-        state.status = 'loading';
+        state.status = "loading";
       })
       .addCase(createCandidate.fulfilled, (state, action) => {
-        state.status = 'succeeded';
+        state.status = "succeeded";
         toast.success("Candidate added successfully");
         state.candidates.push(action.payload);
       })
       .addCase(createCandidate.rejected, (state, action) => {
-        state.status = 'failed';
+        state.status = "failed";
         toast.error("Failed to add candidate");
       });
   },
 });
 
 export const useCandidateSelector = () => {
-  const { candidates, status } = useSelector((state: { candidate: CandidateState }) => state.candidate);
+  const { candidates, status } = useSelector(
+    (state: { candidate: CandidateState }) => state.candidate
+  );
   return { candidates, status };
 };
 

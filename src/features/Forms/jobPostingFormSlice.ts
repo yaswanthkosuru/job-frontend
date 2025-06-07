@@ -2,37 +2,51 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { useSelector } from "react-redux";
 import { API_URL } from "@/constants";
 import axios from "axios";
-import { JobPosting, JobPostingFormValues } from "@/types/jobPosting";
+import {
+  JobPostingFormValues,
+  JobPostingFormSliceState,
+} from "@/types/jobpostingtype";
 import { RootState } from "@/app/store";
 import { getAuthHeaders } from "@/constants";
 import { fetchJobPostings } from "../jobposting/jobpostingSlice";
 import { stat } from "fs";
+import {
+  FieldTemplateSchema,
+  FieldType,
+} from "@/types/jobpostingformbuildertype";
 
-export interface JobPostingState extends JobPostingFormValues {
-  status: "idle" | "loading" | "succeeded" | "failed";
-}
+export const createJobPosting = createAsyncThunk<
+  any,
+  {},
+  { rejectValue: string }
+>("jobposting/createJobPosting", async ({}, thunkAPI) => {
+  try {
+    const state = thunkAPI.getState() as RootState;
 
-export const createJobPosting = createAsyncThunk(
-  "jobposting/createJobPosting",
-  async (
-    jobPostingData: JobPostingFormValues,
-    { dispatch, rejectWithValue }
-  ) => {
-    try {
-      const response = await axios.post(
-        `${API_URL}/api/v1/jobposting/`,
-        jobPostingData,
-        getAuthHeaders()
+    const jobpostingform = state.jobposting;
+    const { formData } = state.jobpostingformbuilder;
+
+    const formatdata = {
+      ...jobpostingform,
+      form_template: FieldTemplateSchema.parse(formData).fields,
+      skills: jobpostingform.required_skills || [],
+    };
+
+    const response = await axios.post(
+      `${API_URL}/api/v1/jobposting/`,
+      formatdata,
+      getAuthHeaders()
+    );
+    return response.data;
+  } catch (error: unknown) {
+    if (axios.isAxiosError(error)) {
+      return thunkAPI.rejectWithValue(
+        error.response?.data?.message || error.message
       );
-      return response.data;
-    } catch (error: unknown) {
-      if (axios.isAxiosError(error)) {
-        return rejectWithValue(error.response?.data?.message || error.message);
-      }
-      return rejectWithValue("An unknown error occurred");
     }
+    return thunkAPI.rejectWithValue("An unknown error occurred");
   }
-);
+});
 
 export const updateJobPosting = createAsyncThunk(
   "jobposting/updateJobPosting",
@@ -66,24 +80,24 @@ const JobPostingFormSlice = createSlice({
     title: "",
     department: "",
     description: "",
-    responsibilities: "",
+    responsibilities: [],
     employment_type: "full_time",
     required_skills: [],
     location: "",
     salary: "",
     is_active: true,
     status: "idle",
-  } as JobPostingState,
+  } as JobPostingFormSliceState,
   reducers: {
     updateJobPostingForm: (
       state,
-      action: PayloadAction<Partial<JobPostingState>>
+      action: PayloadAction<Partial<JobPostingFormSliceState>>
     ) => {
       return { ...state, ...action.payload, status: "idle" };
     },
     UpdateEntireJobPostingForm: (
       state,
-      action: PayloadAction<JobPostingState>
+      action: PayloadAction<JobPostingFormSliceState>
     ) => {
       console.log("Updating Job Posting Form with:", action.payload);
       return { ...state, ...action.payload, status: "idle" };
@@ -141,5 +155,6 @@ export const useJobPostingForm = () =>
     }
     // state.jobPostingForm
   );
+export const selectJobPostingForm = (state: RootState) => state.jobposting;
 
 export default JobPostingFormSlice.reducer;

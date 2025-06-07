@@ -1,25 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { BuilderData } from "@/types/jobpostingformbuilder";
+import { FieldType, FormBuilderState } from "@/types/jobpostingformbuildertype";
 import { useSelector } from "react-redux";
 import { RootState } from "@/app/store";
 
-interface FormBuilderState {
-  formData: BuilderData;
-  isPreviewMode: boolean;
-}
-
 const initialState: FormBuilderState = {
   formData: {
-    fields: [
-      {
-        name: "job_title",
-        label: "Job Title",
-        type: "text",
-        required: true,
-        multiple: false,
-        options: [],
-      },
-    ],
+    fields: [],
   },
   isPreviewMode: false,
 };
@@ -29,8 +15,11 @@ const formBuilderSlice = createSlice({
   initialState,
   reducers: {
     // Replace the entire form formData
-    setformData(state, action: PayloadAction<BuilderData>) {
-      state.formData = { ...action.payload };
+    setformData(state, action: PayloadAction<FieldType>) {
+      // Always deep clone to avoid sharing frozen objects
+      state.formData = {
+        fields: JSON.parse(JSON.stringify(action.payload.fields)),
+      };
     },
 
     // Add a new field
@@ -76,4 +65,5 @@ export const useFormBuilderFormdata = () => {
   );
   return formData;
 };
+
 export default formBuilderSlice.reducer;

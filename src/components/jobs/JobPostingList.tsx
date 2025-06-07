@@ -1,6 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { JobPostingCard } from "./JobPostingCard";
-import { JobPostingDetails } from "@/types/jobPosting";
+import { JobPostingDetails } from "@/types/jobpostingtype";
 
 interface JobPostingListProps {
   jobs: JobPostingDetails[];
@@ -22,7 +22,9 @@ export const JobPostingList = ({ jobs }: JobPostingListProps) => {
         {jobs.length > 0 ? (
           jobs.map((job) => <JobPostingCard key={job.id} job={job} />)
         ) : (
-          <p className="text-muted-foreground text-center">No job postings available.</p>
+          <p className="text-muted-foreground text-center">
+            No job postings available.
+          </p>
         )}
       </TabsContent>
 
@@ -30,7 +32,9 @@ export const JobPostingList = ({ jobs }: JobPostingListProps) => {
         {activeJobs.length > 0 ? (
           activeJobs.map((job) => <JobPostingCard key={job.id} job={job} />)
         ) : (
-          <p className="text-muted-foreground text-center">No active job postings.</p>
+          <p className="text-muted-foreground text-center">
+            No active job postings.
+          </p>
         )}
       </TabsContent>
 
@@ -38,7 +42,9 @@ export const JobPostingList = ({ jobs }: JobPostingListProps) => {
         {draftJobs.length > 0 ? (
           draftJobs.map((job) => <JobPostingCard key={job.id} job={job} />)
         ) : (
-          <p className="text-muted-foreground text-center">No draft job postings.</p>
+          <p className="text-muted-foreground text-center">
+            No draft job postings.
+          </p>
         )}
       </TabsContent>
     </Tabs>

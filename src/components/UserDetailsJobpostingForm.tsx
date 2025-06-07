@@ -2,7 +2,6 @@
 
 import React from "react";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 
@@ -34,61 +33,74 @@ import {
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import JobPostingTitleSection from "./joppostingFormTitle";
+import { FieldType } from "@/types/jobpostingformbuildertype";
+import { JobPostingFormValues } from "@/types/jobpostingtype";
 
-// Schema
-const FieldSchema = z.object({
-  name: z.string(),
-  label: z.string(),
-  type: z.enum([
-    "text",
-    "textarea",
-    "checkbox",
-    "select",
-    "radio",
-    "number",
-    "date",
-    "file",
-  ]),
-  required: z.boolean(),
-  // multiple: z.boolean().optional(),
-  options: z.array(z.string()).optional(),
-});
-
-const BuilderSchema = z.object({
-  fields: z.array(FieldSchema),
-});
-
-type BuilderData = z.infer<typeof BuilderSchema>;
-
-type PreviewFormProps = {
-  definition: BuilderData;
+type UserDetailsJobpostingFormProps = {
+  fields: FieldType["fields"];
+  jobpostingHeaderFields: JobPostingFormValues;
+  is_preview?: boolean;
+  onSubmit?: (data: Record<string, any>) => Promise<void>;
 };
 
-export default function PreviewForm({ definition }: PreviewFormProps) {
-  const form = useForm();
+export default function UserDetailsJobpostingForm({
+  fields,
+  jobpostingHeaderFields,
+  is_preview,
+  onSubmit,
+}: UserDetailsJobpostingFormProps) {
+  //
+  // 1) Build an object of defaultValues keyed by each field.name.
+  //
+  console.log(fields, "fields");
+  const defaultValues = fields?.reduce<Record<string, any>>((acc, field) => {
+    switch (field.type) {
+      case "checkbox":
+        // will hold an array of selected options
+        acc[field.name] = [];
+        break;
+      case "file":
+        acc[field.name] = null;
+        break;
+      default:
+        // text, number, textarea, select, radio, date → empty string
+        acc[field.name] = "";
+        break;
+    }
+    return acc;
+  }, {});
 
-  const onSubmit = (data: any) => {
-    console.log("Form Submitted:", data);
+  //
+  // 2) useForm<Record<string, any>>() so that each dynamic key is allowed.
+  //
+  const form = useForm<Record<string, any>>({
+    defaultValues,
+  });
+
+  const handleSubmit = async (data: Record<string, any>) => {
+    if (onSubmit) {
+      await onSubmit(data);
+    }
   };
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 flex flex-col gap-10">
-      <h2 className="text-2xl font-bold text-gray-800">Preview Form</h2>
-
-      <JobPostingTitleSection />
+      <JobPostingTitleSection jobpostingHeaderFields={jobpostingHeaderFields} />
 
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-          {definition.fields.map((field, idx) => (
+        {/* 3) wire up handleSubmit correctly */}
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
+          {fields.map((field, idx) => (
             <FormField
               key={idx}
               control={form.control}
               name={field.name}
+              rules={{
+                required: `${field.label} is required`,
+              }}
               render={({ field: f }) => (
                 <FormItem>
-                  <FormLabel className="block text-sm font-medium text-gray-700 mb-1">
-                    {field.label}
-                  </FormLabel>
+                  <FormLabel htmlFor={field.name}>{field.label}</FormLabel>
                   <FormControl>
                     {(() => {
                       switch (field.type) {
@@ -96,9 +108,9 @@ export default function PreviewForm({ definition }: PreviewFormProps) {
                         case "number":
                           return (
                             <Input
+                              id={field.name}
                               type={field.type}
-                              placeholder={`Enter ${field.label.toLowerCase()}`}
-                              className="w-full rounded-md "
+                              placeholder={`${field.name.toLowerCase()}`}
                               {...f}
                             />
                           );
@@ -106,10 +118,10 @@ export default function PreviewForm({ definition }: PreviewFormProps) {
                         case "file":
                           return (
                             <Input
+                              id={field.name}
                               type="file"
-                              className="w-full"
                               onChange={(e) =>
-                                f.onChange(e.target.files?.[0] || null)
+                                f.onChange(e.target.files?.[0] ?? null)
                               }
                             />
                           );
@@ -117,8 +129,8 @@ export default function PreviewForm({ definition }: PreviewFormProps) {
                         case "textarea":
                           return (
                             <Textarea
-                              placeholder={`Enter ${field.label.toLowerCase()}`}
-                              className="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200"
+                              id={field.name}
+                              placeholder={` ${field.name.toLowerCase()}`}
                               {...f}
                             />
                           );
@@ -127,22 +139,18 @@ export default function PreviewForm({ definition }: PreviewFormProps) {
                           return (
                             <Popover>
                               <PopoverTrigger asChild>
-                                <FormControl>
-                                  <Button
-                                    variant="outline"
-                                    className={cn(
-                                      "w-full pl-3 text-left font-normal rounded-md border-gray-300",
-                                      !f.value && "text-muted-foreground"
-                                    )}
-                                  >
-                                    {f.value ? (
-                                      format(new Date(f.value), "PPP")
-                                    ) : (
-                                      <span>Pick a date</span>
-                                    )}
-                                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                                  </Button>
-                                </FormControl>
+                                <Button
+                                  variant="outline"
+                                  className={cn(
+                                    "w-full text-left font-normal rounded-md border-gray-300",
+                                    !f.value && "text-muted-foreground"
+                                  )}
+                                >
+                                  {f.value
+                                    ? format(new Date(f.value), "PPP")
+                                    : "Pick a date"}
+                                  <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                                </Button>
                               </PopoverTrigger>
                               <PopoverContent
                                 className="w-auto p-0"
@@ -154,7 +162,7 @@ export default function PreviewForm({ definition }: PreviewFormProps) {
                                     f.value ? new Date(f.value) : undefined
                                   }
                                   onSelect={(date) =>
-                                    f.onChange(date ? date.toISOString() : "")
+                                    f.onChange(date?.toISOString() ?? "")
                                   }
                                   disabled={(date) =>
                                     date > new Date() ||
@@ -169,29 +177,36 @@ export default function PreviewForm({ definition }: PreviewFormProps) {
                         case "checkbox":
                           return (
                             <div className="space-y-2">
-                              {field.options?.map((opt, i) => (
-                                <div
-                                  key={i}
-                                  className="flex items-center space-x-3 hover:bg-gray-50 p-2 rounded-md transition"
-                                >
-                                  <Checkbox
-                                    value={opt}
-                                    onCheckedChange={(checked) => {
-                                      const current = f.value || [];
-                                      f.onChange(
-                                        checked
-                                          ? [...current, opt]
-                                          : current.filter(
-                                              (v: string) => v !== opt
-                                            )
-                                      );
-                                    }}
-                                  />
-                                  <label className="text-sm text-gray-700">
-                                    {opt}
-                                  </label>
-                                </div>
-                              ))}
+                              {field.options?.map((opt, i) => {
+                                // cast f.value to string[] for TS
+                                const selectedArr = (f.value as string[]) || [];
+                                return (
+                                  <div
+                                    key={i}
+                                    className="flex items-center space-x-3 hover:bg-gray-50 p-2 rounded-md transition"
+                                  >
+                                    <Checkbox
+                                      checked={selectedArr.includes(opt)}
+                                      onCheckedChange={(checked) => {
+                                        const curr = [...selectedArr];
+                                        if (checked) {
+                                          curr.push(opt);
+                                        } else {
+                                          const idx = curr.indexOf(opt);
+                                          if (idx > -1) curr.splice(idx, 1);
+                                        }
+                                        f.onChange(curr);
+                                      }}
+                                    />
+                                    <label
+                                      htmlFor={`${field.name}-${i}`}
+                                      className="text-sm text-gray-700"
+                                    >
+                                      {opt}
+                                    </label>
+                                  </div>
+                                );
+                              })}
                             </div>
                           );
 
@@ -199,7 +214,7 @@ export default function PreviewForm({ definition }: PreviewFormProps) {
                           return (
                             <RadioGroup
                               onValueChange={f.onChange}
-                              defaultValue={f.value}
+                              value={f.value as string}
                               className="space-y-2"
                             >
                               {field.options?.map((opt, i) => (
@@ -226,7 +241,7 @@ export default function PreviewForm({ definition }: PreviewFormProps) {
                           return (
                             <Select
                               onValueChange={f.onChange}
-                              defaultValue={f.value}
+                              value={f.value as string}
                             >
                               <SelectTrigger className="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200">
                                 <SelectValue placeholder="Select option" />
@@ -254,6 +269,7 @@ export default function PreviewForm({ definition }: PreviewFormProps) {
 
           <Button
             type="submit"
+            disabled={is_preview}
             className="w-full text-white font-semibold py-2 px-4 rounded-md transition"
           >
             Submit

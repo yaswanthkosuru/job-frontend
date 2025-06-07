@@ -17,11 +17,10 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
-import { Progress } from "@/components/ui/progress";
 
 import JobPostingForm from "@/components/JobPostingForm";
 import JobPostingFormBuilder from "@/components/JobpostingFormBuilder";
-import PreviewForm from "@/components/jobpostingpreviewform";
+import UserDetailsJobpostingForm from "@/components/UserDetailsJobpostingForm";
 
 import {
   setformData,
@@ -30,10 +29,16 @@ import {
 import {
   createJobPosting,
   UpdateEntireJobPostingForm,
+  useJobPostingForm,
 } from "@/features/Forms/jobPostingFormSlice";
+import { toast } from "sonner";
 
-import { JobPostingFormValues } from "@/types";
-import { BuilderData, BuilderSchema } from "@/types/jobpostingformbuilder";
+import {
+  FieldType,
+  FieldTemplateSchema,
+} from "@/types/jobpostingformbuildertype";
+import { useRouter } from "next/navigation";
+import { JobPostingFormValues } from "@/types/jobpostingtype";
 
 const CreateJobPostingUI = ({
   Setstep,
@@ -52,6 +57,7 @@ const CreateJobPostingUI = ({
     Setstep("builder");
     // await dispatch(createJobPosting(data));
   };
+  const values = useJobPostingForm();
 
   return (
     <Card className="shadow-md rounded-xl">
@@ -62,32 +68,47 @@ const CreateJobPostingUI = ({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <JobPostingForm onSubmit={handleSubmit} />
+        <JobPostingForm onSubmit={handleSubmit} defaultValues={values} />
       </CardContent>
     </Card>
   );
 };
 
 const CreateFormBuilderUI = () => {
-  const definitionfromselector = useFormBuilderFormdata();
+  const formtemplate = useFormBuilderFormdata();
   const [showPreview, setShowPreview] = useState(false);
+  const [loading, setLoading] = useState(false);
   const dispatch = useDispatch<AppDispatch>();
 
-  const form = useForm<BuilderData>({
-    resolver: zodResolver(BuilderSchema),
+  const form = useForm<FieldType>({
+    resolver: zodResolver(FieldTemplateSchema),
     defaultValues: {
-      fields: [],
+      fields: [
+        {
+          name: "Email",
+          label: "Email",
+          type: "text",
+          required: true,
+        },
+        {
+          name: "FullName",
+          label: "FullName",
+          type: "text",
+          required: true,
+        },
+      ],
     },
   });
 
   const values = useFormBuilderFormdata();
 
   useEffect(() => {
-    if (values) {
+    if (values.fields.length > 0) {
       console.log(values, "inside job posting form react");
-      form.reset(values);
+      const fields = values.fields;
+      form.reset({ fields });
     }
-  }, []);
+  }, [values]);
 
   const handleToggle = (checked: boolean) => {
     dispatch(
@@ -99,6 +120,18 @@ const CreateFormBuilderUI = () => {
       setShowPreview(checked);
     }, 300);
   };
+  const router = useRouter();
+  const handlesaveandpublish = async () => {
+    setLoading(true);
+    const result = await dispatch(createJobPosting({}));
+    setLoading(false);
+    if (createJobPosting.fulfilled.match(result)) {
+      toast.success("Job posting created successfully");
+      router.push("/dashboard/jobs");
+    }
+  };
+
+  const jobpostingTitleSection = useJobPostingForm();
 
   return (
     <Card className="shadow-md rounded-xl">
@@ -118,13 +151,22 @@ const CreateFormBuilderUI = () => {
       </CardHeader>
       <CardContent>
         {showPreview ? (
-          <PreviewForm definition={{ fields: definitionfromselector.fields }} />
+          <UserDetailsJobpostingForm
+            fields={form.getValues("fields")}
+            jobpostingHeaderFields={jobpostingTitleSection}
+            is_preview={true}
+          />
         ) : (
           <JobPostingFormBuilder form={form} />
         )}
       </CardContent>
       <CardFooter className="flex justify-end">
-        <Button disabled={!showPreview}>Save & Publish</Button>
+        <Button
+          onClick={handlesaveandpublish}
+          disabled={!showPreview || loading}
+        >
+          {loading ? "Saving..." : "Save & Publish"}
+        </Button>
       </CardFooter>
     </Card>
   );

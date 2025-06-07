@@ -1,5 +1,4 @@
-
-import { InterviewerProfile } from "@/types/users";
+import { InterviewerProfile } from "@/types/userstype";
 import InterviewerCard from "./InterviewCard";
 
 interface InterviewerGridProps {
@@ -13,9 +12,9 @@ const InterviewerGrid = ({ interviewers }: InterviewerGridProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {interviewers.map((interviewer) => (
-        <InterviewerCard 
-          key={interviewer.user.email} 
-          interviewer={interviewer} 
+        <InterviewerCard
+          key={interviewer.user.email}
+          interviewer={interviewer}
         />
       ))}
     </div>

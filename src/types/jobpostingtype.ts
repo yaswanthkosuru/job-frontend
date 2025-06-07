@@ -1,31 +1,39 @@
 import * as z from "zod";
-import { CandidateProfile } from "./users";
+import { CandidateProfile } from "./userstype";
+import { FieldType } from "./jobpostingformbuildertype";
 
 export const jobPostingSchema = z.object({
   title: z.string().min(1, "Job title is required"),
   department: z.string().min(1, "Department is required"),
   description: z.string().min(10, "Description must be at least 10 characters"),
-  responsibilities: z.string().min(10, "Responsibilities must be at least 10 characters"),
-  employment_type: z.enum(["full_time", "part_time", "contract", "internship"], {
-    required_error: "Employment type is required",
-  }),
+  responsibilities: z.array(
+    z.string().min(10, "Each responsibility must be at least 10 characters")
+  ),
+  employment_type: z.enum(
+    ["full_time", "part_time", "contract", "internship"],
+    {
+      required_error: "Employment type is required",
+    }
+  ),
   required_skills: z.array(z.string()).min(1, "At least one skill is required"),
   location: z.string().min(1, "Location is required"),
   salary: z.string().min(1, "Salary is required"),
   is_active: z.boolean().default(true),
 });
 
-export type JobPosting = z.infer<typeof jobPostingSchema>;
+export type JobPostingFormValues = z.infer<typeof jobPostingSchema>;
 
-export type JobPostingFormValues = JobPosting;
+export interface JobPostingFormSliceState extends JobPostingFormValues {
+  status: "idle" | "loading" | "succeeded" | "failed";
+}
 
 export interface JobPostingFormProps {
-  onSubmit: (data: JobPosting) => Promise<void>;
-  defaultValues?: Partial<JobPosting>;
+  onSubmit: (data: JobPostingFormValues) => Promise<void>;
+  defaultValues?: Partial<JobPostingFormValues>;
   isEdit?: boolean;
 }
 
-export interface JobPostingResponse extends JobPosting {
+export interface JobPostingResponse extends JobPostingFormValues {
   id: string;
   created_at: string;
   updated_at: string;
@@ -60,6 +68,10 @@ export interface JobPostingDetails {
   id: number;
   recruiter: Recruiter;
   skills: Skill[];
+  form_template: {
+    id: number;
+    template: FieldType["fields"];
+  };
   title: string;
   department: string;
   description: string;
@@ -72,7 +84,7 @@ export interface JobPostingDetails {
   is_active: boolean;
 }
 
-export interface AddCandidate{
-  candidate: CandidateProfile
-  jobposting:number
+export interface AddCandidate {
+  candidate: CandidateProfile;
+  jobposting: number;
 }

@@ -2,7 +2,7 @@
 
 import JobPostingForm from "@/components/JobPostingForm";
 import Navbar from "@/components/Navbar";
-import { JobPosting } from "@/types/jobPosting";
+import { JobPosting } from "@/types/jobpostingtype";
 import React from "react";
 import { useDispatch } from "react-redux";
 import { createJobPosting } from "@/features/Forms/jobPostingFormSlice";
@@ -35,12 +35,14 @@ const JobPostingPage = () => {
       <Navbar />
       <div className="container mx-auto py-10 px-4">
         <div className="flex px-12 mt-2 font-medium items-center justify-end">
-          <button onClick={handleLaterClick} className="text-sm text-blue-500 underline cursor-pointer hover:cursor-pointer">I will do it later</button>
+          <button
+            onClick={handleLaterClick}
+            className="text-sm text-blue-500 underline cursor-pointer hover:cursor-pointer"
+          >
+            I will do it later
+          </button>
         </div>
-        <JobPostingForm 
-          onSubmit={handleSubmit}
-          isEdit={false}
-        />
+        <JobPostingForm onSubmit={handleSubmit} isEdit={false} />
       </div>
     </div>
   );
