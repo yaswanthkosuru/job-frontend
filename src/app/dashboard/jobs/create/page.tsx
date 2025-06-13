@@ -96,6 +96,12 @@ const CreateFormBuilderUI = () => {
           type: "text",
           required: true,
         },
+        {
+          name: "Resume/cv",
+          label: "Resume",
+          type: "file",
+          required: true,
+        },
       ],
     },
   });

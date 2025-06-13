@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
@@ -31,12 +31,13 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
+import { upload } from "@vercel/blob/client";
 import { cn } from "@/lib/utils";
 import JobPostingTitleSection from "./joppostingFormTitle";
 import { FieldType } from "@/types/jobpostingformbuildertype";
 import { JobPostingFormValues } from "@/types/jobpostingtype";
 
-type UserDetailsJobpostingFormProps = {
+export type UserDetailsJobpostingFormProps = {
   fields: FieldType["fields"];
   jobpostingHeaderFields: JobPostingFormValues;
   is_preview?: boolean;
@@ -46,36 +47,19 @@ type UserDetailsJobpostingFormProps = {
 export default function UserDetailsJobpostingForm({
   fields,
   jobpostingHeaderFields,
-  is_preview,
+  is_preview = false,
   onSubmit,
 }: UserDetailsJobpostingFormProps) {
-  //
-  // 1) Build an object of defaultValues keyed by each field.name.
-  //
-  console.log(fields, "fields");
-  const defaultValues = fields?.reduce<Record<string, any>>((acc, field) => {
-    switch (field.type) {
-      case "checkbox":
-        // will hold an array of selected options
-        acc[field.name] = [];
-        break;
-      case "file":
-        acc[field.name] = null;
-        break;
-      default:
-        // text, number, textarea, select, radio, date → empty string
-        acc[field.name] = "";
-        break;
-    }
+  // Build default values
+  const defaultValues = fields.reduce<Record<string, any>>((acc, field) => {
+    if (field.type === "checkbox") acc[field.name] = [];
+    else if (field.type === "file") acc[field.name] = null;
+    else acc[field.name] = "";
     return acc;
   }, {});
 
-  //
-  // 2) useForm<Record<string, any>>() so that each dynamic key is allowed.
-  //
-  const form = useForm<Record<string, any>>({
-    defaultValues,
-  });
+  const form = useForm<Record<string, any>>({ defaultValues });
+  const [uploading, setUploading] = useState<Record<string, boolean>>({});
 
   const handleSubmit = async (data: Record<string, any>) => {
     if (onSubmit) {
@@ -83,21 +67,34 @@ export default function UserDetailsJobpostingForm({
     }
   };
 
+  // Handle file uploads via Vercel Blob
+  async function handleFileChange(name: string, file: File) {
+    setUploading((prev) => ({ ...prev, [name]: true }));
+    try {
+      const result = await upload(file.name, file, {
+        access: "public",
+        handleUploadUrl: "/api/avatar/upload",
+      });
+      form.setValue(name, result.url);
+    } catch (err) {
+      console.error("Upload error", err);
+    } finally {
+      setUploading((prev) => ({ ...prev, [name]: false }));
+    }
+  }
+
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 flex flex-col gap-10">
       <JobPostingTitleSection jobpostingHeaderFields={jobpostingHeaderFields} />
 
       <Form {...form}>
-        {/* 3) wire up handleSubmit correctly */}
         <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
           {fields.map((field, idx) => (
             <FormField
               key={idx}
               control={form.control}
               name={field.name}
-              rules={{
-                required: `${field.label} is required`,
-              }}
+              rules={{ required: `${field.label} is required` }}
               render={({ field: f }) => (
                 <FormItem>
                   <FormLabel htmlFor={field.name}>{field.label}</FormLabel>
@@ -110,19 +107,8 @@ export default function UserDetailsJobpostingForm({
                             <Input
                               id={field.name}
                               type={field.type}
-                              placeholder={`${field.name.toLowerCase()}`}
+                              placeholder={field.label}
                               {...f}
-                            />
-                          );
-
-                        case "file":
-                          return (
-                            <Input
-                              id={field.name}
-                              type="file"
-                              onChange={(e) =>
-                                f.onChange(e.target.files?.[0] ?? null)
-                              }
                             />
                           );
 
@@ -130,9 +116,75 @@ export default function UserDetailsJobpostingForm({
                           return (
                             <Textarea
                               id={field.name}
-                              placeholder={` ${field.name.toLowerCase()}`}
+                              placeholder={field.label}
                               {...f}
                             />
+                          );
+
+                        case "select":
+                          return (
+                            <Select onValueChange={f.onChange} value={f.value}>
+                              <SelectTrigger className="w-full">
+                                <SelectValue placeholder="Select..." />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {field.options?.map((opt, i) => (
+                                  <SelectItem key={i} value={opt}>
+                                    {opt}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          );
+
+                        case "radio":
+                          return (
+                            <RadioGroup
+                              onValueChange={f.onChange}
+                              value={f.value}
+                              className="space-y-2"
+                            >
+                              {field.options?.map((opt, i) => (
+                                <div
+                                  key={i}
+                                  className="flex items-center space-x-3"
+                                >
+                                  <RadioGroupItem
+                                    value={opt}
+                                    id={`${field.name}-${i}`}
+                                  />
+                                  <label htmlFor={`${field.name}-${i}`}>
+                                    {opt}
+                                  </label>
+                                </div>
+                              ))}
+                            </RadioGroup>
+                          );
+
+                        case "checkbox":
+                          return (
+                            <div className="space-y-2">
+                              {field.options?.map((opt, i) => {
+                                const selected = (f.value as string[]) || [];
+                                return (
+                                  <div
+                                    key={i}
+                                    className="flex items-center space-x-3"
+                                  >
+                                    <Checkbox
+                                      checked={selected.includes(opt)}
+                                      onCheckedChange={(chk) => {
+                                        const curr = [...selected];
+                                        if (chk) curr.push(opt);
+                                        else curr.splice(curr.indexOf(opt), 1);
+                                        f.onChange(curr);
+                                      }}
+                                    />
+                                    <label>{opt}</label>
+                                  </div>
+                                );
+                              })}
+                            </div>
                           );
 
                         case "date":
@@ -142,7 +194,7 @@ export default function UserDetailsJobpostingForm({
                                 <Button
                                   variant="outline"
                                   className={cn(
-                                    "w-full text-left font-normal rounded-md border-gray-300",
+                                    "w-full text-left",
                                     !f.value && "text-muted-foreground"
                                   )}
                                 >
@@ -174,86 +226,29 @@ export default function UserDetailsJobpostingForm({
                             </Popover>
                           );
 
-                        case "checkbox":
+                        case "file":
                           return (
-                            <div className="space-y-2">
-                              {field.options?.map((opt, i) => {
-                                // cast f.value to string[] for TS
-                                const selectedArr = (f.value as string[]) || [];
-                                return (
-                                  <div
-                                    key={i}
-                                    className="flex items-center space-x-3 hover:bg-gray-50 p-2 rounded-md transition"
-                                  >
-                                    <Checkbox
-                                      checked={selectedArr.includes(opt)}
-                                      onCheckedChange={(checked) => {
-                                        const curr = [...selectedArr];
-                                        if (checked) {
-                                          curr.push(opt);
-                                        } else {
-                                          const idx = curr.indexOf(opt);
-                                          if (idx > -1) curr.splice(idx, 1);
-                                        }
-                                        f.onChange(curr);
-                                      }}
-                                    />
-                                    <label
-                                      htmlFor={`${field.name}-${i}`}
-                                      className="text-sm text-gray-700"
-                                    >
-                                      {opt}
-                                    </label>
-                                  </div>
-                                );
-                              })}
-                            </div>
-                          );
-
-                        case "radio":
-                          return (
-                            <RadioGroup
-                              onValueChange={f.onChange}
-                              value={f.value as string}
-                              className="space-y-2"
-                            >
-                              {field.options?.map((opt, i) => (
-                                <div
-                                  key={i}
-                                  className="flex items-center space-x-3 hover:bg-gray-50 p-2 rounded-md transition"
+                            <div className="flex flex-col space-y-2">
+                              <Input
+                                id={field.name}
+                                type="file"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) handleFileChange(field.name, file);
+                                }}
+                                disabled={uploading[field.name]}
+                              />
+                              {uploading[field.name] && <p>Uploading...</p>}
+                              {f.value && (
+                                <a
+                                  href={f.value}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
                                 >
-                                  <RadioGroupItem
-                                    value={opt}
-                                    id={`${field.name}-${i}`}
-                                  />
-                                  <label
-                                    htmlFor={`${field.name}-${i}`}
-                                    className="text-sm text-gray-700"
-                                  >
-                                    {opt}
-                                  </label>
-                                </div>
-                              ))}
-                            </RadioGroup>
-                          );
-
-                        case "select":
-                          return (
-                            <Select
-                              onValueChange={f.onChange}
-                              value={f.value as string}
-                            >
-                              <SelectTrigger className="w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring focus:ring-blue-200">
-                                <SelectValue placeholder="Select option" />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {field.options?.map((opt, i) => (
-                                  <SelectItem key={i} value={opt}>
-                                    {opt}
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
+                                  View file
+                                </a>
+                              )}
+                            </div>
                           );
 
                         default:
@@ -261,17 +256,13 @@ export default function UserDetailsJobpostingForm({
                       }
                     })()}
                   </FormControl>
-                  <FormMessage className="text-sm text-red-500 mt-1" />
+                  <FormMessage />
                 </FormItem>
               )}
             />
           ))}
 
-          <Button
-            type="submit"
-            disabled={is_preview}
-            className="w-full text-white font-semibold py-2 px-4 rounded-md transition"
-          >
+          <Button type="submit" disabled={is_preview} className="w-full">
             Submit
           </Button>
         </form>

@@ -16,24 +16,68 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { API_URL } from "@/constants";
+import { recruiterJobApplicant } from "@/types/jobApplicantstype";
+import {
+  fetchRecruiterjobapplicants,
+  useRecruiterJobApplicant,
+} from "@/features/jobapplicants/recruiterjobapplicationSlice";
+// Generate 100 entries dynamically:
+const initialData = Array.from({ length: 100 }, (_, idx) => {
+  const id = idx + 1;
+
+  // Base timestamp (ISO string) and interval in ms (10 seconds)
+  const baseTs = new Date("2025-06-07T03:45:00Z").getTime();
+  const appliedAt = new Date(baseTs + idx * 10_000).toISOString();
+
+  return {
+    id,
+    user_details: {
+      Email: `yaswanth${id}@gmail.com`,
+      Gender: "male",
+      grades: ["grade 7th", "grade 8th", "grade 9th"],
+      Subject: "Maths",
+      FullName: "yaswanth",
+      referral: "david@learnfluid.com",
+      "Date of Birth": "2025-03-23T18:30:00.000Z",
+      "Contact Number": "123456789",
+      "Currently Working": "yes",
+      "Current Designation": "Full stack react python developer",
+      "Name of the company": "learnfluid",
+      "Highest Educational qualification": "bachelors",
+      // …you can add more generic fields here…
+    },
+    additional_notes: null,
+    cover_letter: null,
+    status: "pending",
+    applied_at: appliedAt,
+  };
+});
 
 export default function JobPostingPage() {
   const { id } = useParams<{ id: string }>();
   const jobPosting = useJobPostingById(Number(id));
   const dispatch = useDispatch<AppDispatch>();
-  const { status } = useSelector((state: RootState) => state.jobposting);
-  const [isClient, setIsClient] = useState(true);
+
+  // const { status } = useSelector((state: RootState) => state.jobposting);
+  // const [isClient, setIsClient] = useState(true);
 
   useEffect(() => {
     if (!jobPosting) {
       dispatch(fetchJobPostings());
     }
+    dispatch(fetchRecruiterjobapplicants({ jobposting_id: id }));
   }, [dispatch, jobPosting]);
 
-  useEffect(() => {
-    setIsClient(false);
-  }, []);
-  if (isClient) {
+  const { recruiterjobapplicationdata, status } = useRecruiterJobApplicant();
+
+  console.log(recruiterjobapplicationdata, "recruiter job application");
+
+  // useEffect(() => {
+  //   setIsClient(false);
+  // }, []);
+
+  if (status === "loading") {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
         <div className="w-full max-w-4xl p-8 space-y-6">
@@ -51,7 +95,11 @@ export default function JobPostingPage() {
     );
   }
 
-  if (!jobPosting) {
+  if (
+    !jobPosting ||
+    recruiterjobapplicationdata === undefined ||
+    recruiterjobapplicationdata.length === 0
+  ) {
     return (
       <div className="flex flex-col items-center justify-center h-screen bg-gray-50">
         <div className="w-full max-w-4xl p-8 space-y-6">
@@ -78,8 +126,8 @@ export default function JobPostingPage() {
   };
 
   return (
-    <div className="min-h-screen  py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-5xl mx-auto">
+    <div className="min-h-screen  py-8 px-1 sm:px-2 lg:px-2">
+      <div className="max-w-6xl mx-auto">
         <Card className="mb-8 border-none shadow-md">
           <CardHeader className=" pb-4">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -145,7 +193,7 @@ export default function JobPostingPage() {
         </Card>
 
         <div className="bg-white rounded-lg shadow-md p-6">
-          <ApplicationBoard />
+          <ApplicationBoard initialData={recruiterjobapplicationdata ?? []} />
         </div>
       </div>
     </div>

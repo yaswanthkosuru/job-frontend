@@ -187,8 +187,10 @@ export default function JobPostingFormBuilder({
     return () => {
       const fields = form.getValues("fields");
       // Deep clone to avoid mutation errors
-      const cleaned_fields = FieldTemplateSchema.parse({ fields: fields });
-      const clonedFields = JSON.parse(JSON.stringify(cleaned_fields.fields));
+      const cleaned_fields = FieldTemplateSchema.safeParse({ fields: fields });
+      const clonedFields = cleaned_fields.success
+        ? JSON.parse(JSON.stringify(cleaned_fields.data.fields || []))
+        : [];
       dispatch(setformData({ fields: clonedFields }));
     };
   }, [dispatch, form]);

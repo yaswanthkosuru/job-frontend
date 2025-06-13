@@ -18,7 +18,7 @@ import { AppDispatch } from "../store";
 import {
   getJobApplicationAnalytics,
   useJobApplicationAnalytics,
-} from "@/features/jobapplicants/jobapplicantslice";
+} from "@/features/jobapplicants/recruiterjobapplicationSlice";
 
 // Sample data remains the sam
 

@@ -5,7 +5,7 @@ import userFormReducer from "@/features/Forms/userFormSlice";
 import jobPostingFormReducer from "@/features/Forms/jobPostingFormSlice";
 import jobPostingReducer from "@/features/jobposting/jobpostingSlice";
 import candidateReducer from "@/features/candidate/CandidateSlice";
-import jobApplicantsReducer from "@/features/jobapplicants/jobapplicantslice";
+import recruiterJobReducer from "@/features/jobapplicants/recruiterjobapplicationSlice";
 import llmReducer from "@/features/llm/llmslice";
 import interviewerReducer from "@/features/interviewer/InterviewerSlice";
 import JobPostingFormBuilderReducer from "@/features/Forms/jobpostingformbuilderSlice";
@@ -18,7 +18,7 @@ export const store = configureStore({
     jobposting: jobPostingFormReducer,
     jobpostingData: jobPostingReducer,
     candidate: candidateReducer,
-    jobapplicants: jobApplicantsReducer,
+    recruiterjobapplicant: recruiterJobReducer,
     llm: llmReducer,
     interviewer: interviewerReducer,
     jobpostingformbuilder: JobPostingFormBuilderReducer, // Assuming this is the form builder slice

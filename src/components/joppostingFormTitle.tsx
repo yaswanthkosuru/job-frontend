@@ -60,23 +60,16 @@ export default function JobPostingTitleSection({
         <h2 className="flex items-center gap-2 mb-2">
           <Briefcase size={18} /> Job Responsibilities
         </h2>
-        <ul className="space-y-2 text-sm text-gray-700">
-          {/* {[
-            "Provide personalized math tutoring to students of various ages and skill levels.",
-            "Create engaging lesson plans and materials tailored to individual student needs.",
-            "Track student progress and provide constructive feedback.",
-            "Maintain communication with students and parents regarding performance and goals.",
-          ].map((item, index) => (
-            <li key={index} className="flex items-start gap-2">
-              <CheckCircle size={16} className="text-green-600 mt-0.5" />
-              <span>{item}</span>
-            </li>
-          ))} */}
-
+        <ul className="space-y-2">
           {responsibilities?.map((responsibility, index) => (
-            <li key={index} className="flex items-start gap-2">
-              <CheckCircle size={16} className="text-green-600 mt-0.5" />
-              <span>{responsibility}</span>
+            <li
+              key={index}
+              className="flex items-start gap-2 text-sm text-muted-foreground"
+            >
+              {/* remove size={…}, fix with h-4 w-4 and disable shrinking */}
+              <CheckCircle className="flex-shrink-0 h-4 w-4 text-green-600 mt-1" />
+              {/* turn span into a block-level element so it can wrap cleanly */}
+              <span className="leading-relaxed">{responsibility}</span>
             </li>
           ))}
         </ul>
@@ -86,11 +79,16 @@ export default function JobPostingTitleSection({
         <h2 className="flex items-center gap-2  mb-2">
           <BookOpen size={18} /> Requirements
         </h2>
-        <ul className="space-y-2 text-sm text-gray-700">
-          {required_skills?.map((item, index) => (
-            <li key={index} className="flex items-start gap-2">
-              <CheckCircle size={16} className="text-blue-600 mt-0.5" />
-              <span>{item}</span>
+        <ul className="space-y-2">
+          {required_skills?.map((responsibility, index) => (
+            <li
+              key={index}
+              className="flex items-start gap-2 text-sm text-muted-foreground"
+            >
+              {/* remove size={…}, fix with h-4 w-4 and disable shrinking */}
+              <CheckCircle className="flex-shrink-0 h-4 w-4 text-green-600 mt-1" />
+              {/* turn span into a block-level element so it can wrap cleanly */}
+              <span className="leading-relaxed">{responsibility}</span>
             </li>
           ))}
         </ul>

@@ -16,7 +16,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "@/app/store";
-import { UpdateStatusofJobApplication } from "@/features/jobapplicants/jobapplicantslice";
+import { UpdateStatusofJobApplication } from "@/features/jobapplicants/recruiterjobapplicationSlice";
 import { Application } from "@/types/jobApplicantstype";
 
 const FormSchema = z.object({

@@ -17,3 +17,11 @@ export interface Interviewjobapplicationanalytics {
   title: string;
   application_count: number;
 }
+export type recruiterJobApplicant = {
+  id: number | string;
+  user_details: Record<string, any>;
+  applied_at: string;
+  status: string;
+  additional_notes: string | null;
+  cover_letter: string | null;
+};

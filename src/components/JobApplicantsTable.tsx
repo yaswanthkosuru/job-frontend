@@ -12,6 +12,7 @@ import {
   ColumnFiltersState,
   SortingState,
   VisibilityState,
+  PaginationState,
 } from "@tanstack/react-table";
 import { ArrowUpDown, ChevronDown } from "lucide-react";
 
@@ -31,6 +32,13 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DataTableProps<TData> {
   data: TData[];
@@ -38,31 +46,33 @@ interface DataTableProps<TData> {
 }
 
 export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
-  // ─── 1. Table‐state (sorting, filtering, visibility, selection) ──────────
+  // ─── 1. Table‐state (sorting, filtering, visibility, pagination) ──────────
   const [sorting, setSorting] = React.useState<SortingState>([]);
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
   );
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState<
-    Record<string, boolean>
-  >({});
+  const [pagination, setPagination] = React.useState<PaginationState>({
+    pageIndex: 0,
+    pageSize: 10,
+  });
 
   // ─── 2. Hook into TanStack Table ─────────────────────────────────────────
   const table = useReactTable({
     data,
     columns,
+    pageCount: Math.ceil(data.length / pagination.pageSize),
     state: {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,
+      pagination,
     },
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
+    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
@@ -71,18 +81,16 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
 
   return (
     <div className="w-full">
-      {/* ─── Filter Input & Column‐Visibility Dropdown ─────────────────────── */}
+      {/* ─── Filter & Column Dropdown ─────────────────────────────────────── */}
       <div className="flex items-center py-4">
-        {/* Example “global” filter on a column named “email” (if it exists) */}
         <Input
           placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          value={(table.getColumn("Email")?.getFilterValue() as string) ?? ""}
           onChange={(e) =>
-            table.getColumn("email")?.setFilterValue(e.target.value)
+            table.getColumn("Email")?.setFilterValue(e.target.value)
           }
           className="max-w-sm"
         />
-
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" className="ml-auto">
@@ -107,7 +115,7 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
         </DropdownMenu>
       </div>
 
-      {/* ─── Table Itself ───────────────────────────────────────────────────── */}
+      {/* ─── Table ─────────────────────────────────────────────────────────── */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -158,10 +166,43 @@ export function DataTable<TData>({ data, columns }: DataTableProps<TData>) {
       </div>
 
       {/* ─── Pagination Controls ─────────────────────────────────────────────── */}
-      <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="text-muted-foreground flex-1 text-sm">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+      <div className="flex items-center justify-between space-x-2 py-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm">Page</span>
+          <strong>
+            {table.getState().pagination.pageIndex + 1} of{" "}
+            {table.getPageCount()}
+          </strong>
+          <span className="sr-only"> | Go to page:</span>
+          <Input
+            type="number"
+            defaultValue={table.getState().pagination.pageIndex + 1}
+            onChange={(e) => {
+              const page = e.target.value ? Number(e.target.value) - 1 : 0;
+              table.setPageIndex(page);
+            }}
+            className="w-16"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm">Show</span>
+          <Select
+            value={String(table.getState().pagination.pageSize)}
+            onValueChange={(value) => table.setPageSize(Number(value))}
+            // className="w-20"
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Page size" />
+            </SelectTrigger>
+            <SelectContent>
+              {[10, 20, 30, 40, 50].map((size) => (
+                <SelectItem key={size} value={String(size)}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <span className="text-sm">entries</span>
         </div>
         <div className="space-x-2">
           <Button
